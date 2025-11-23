@@ -1,0 +1,16 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+	<div class ="container">
+		<form action="/function" method = "POST">
+			<p><h2>Search Department:</h2> 
+                <label for="dept">Choose a Department:</label>
+
+                <select name="dept" id="dept">
+                    {% for dept in data %}
+                        <option value="{{ dept }}">{{ dept }}</option>
+                    {% endfor %}                  
+                </select>
+			<p><input type = "submit" value = "Submit" /></p>
+		</form>
+	</div>
+{% endblock %}

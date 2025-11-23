@@ -1,0 +1,13 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+
+	<div class ="container">
+		<form action="/studentsearch" method = "POST">
+			<p><h2>Student Search:</h2> 
+			<p>Name <input type="text" name = "name" /></p>
+			<p>ID <input type = "integer" name = "id" /></p>
+			<p><input type = "submit" value = "Submit" /></p>
+		</form>
+	</div>
+
+{% endblock %}

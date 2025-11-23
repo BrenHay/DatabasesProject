@@ -1,0 +1,36 @@
+{% extends '/include/layout.html' %}
+
+{% block content %}
+    <div class="container"> 
+        <h1>
+            Student Schedule
+        </h1>
+    </div>
+     <form method="POST">
+    <label for="year">Filter by Year:</label>
+    <select name="year" class="form-select">
+        {% for y in years %}
+            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
+                {{ y }}
+            </option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary mt-2">Apply Filter</button>
+</form>
+
+    <div class = "container">
+        <table  cellpadding="5" cellspacing="5" class="table table-hover">
+            <tr><th>ID</th><th>Name</th><th>Course ID</th><th>Section ID</th> <th>Semester</th> <th>Year</th> <th>Grade</th></tr>	
+            {% for row in schedule %}
+            <tr>
+                {% for d in row %}
+                <td>{{d}}</td>
+                
+                {% endfor %}
+                
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

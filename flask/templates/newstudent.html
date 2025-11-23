@@ -1,0 +1,59 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="/newstudent" method="POST">
+        <p><h2>New Student:</h2> 
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput" class="form-label">Name</label>
+            <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Name" name="name">
+        </div>
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput2" class="form-label">ID</label>
+            <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="ID" name="id">
+        </div>
+
+        <div class="mb-3">
+            <label for="depts">Choose a Department:</label>
+            <select name="dept" id="dept">
+                {% for dept in data %}
+                <option value="{{ dept }}">{{ dept }}</option>
+                {% endfor %}                  
+            </select>
+        </div>
+
+        <div>
+            <label>
+                Is transfer Student?: 
+                <input type="checkbox" id="isActiveCheckbox" name="is_active">
+            </label>
+        </div>
+
+        <!-- Wrap credits field in a div with an id -->
+        <div class="mb-3" id="creditsField">
+            <label for="formGroupExampleInput3" class="form-label">Credits</label>
+            <input type="text" class="form-control" id="formGroupExampleInput3" placeholder="Credits" name="credits">
+        </div>            
+
+        <button type="submit" class="btn btn-primary">Create New</button>
+    </form>
+</div>
+
+<!-- JavaScript to show/hide Credits based on checkbox -->
+<script>
+const checkbox = document.getElementById("isActiveCheckbox");
+const creditsDiv = document.getElementById("creditsField");
+
+function toggleCredits() {
+    // Hide credits if checkbox is checked, show if unchecked
+    creditsDiv.style.display = checkbox.checked ? "block" : "none";
+}
+
+// Initial check on page load
+toggleCredits();
+
+// Update visibility whenever checkbox changes
+checkbox.addEventListener("change", toggleCredits);
+</script>
+{% endblock %}
