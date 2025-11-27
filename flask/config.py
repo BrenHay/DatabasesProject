@@ -1,6 +1,6 @@
 import pymysql
 #change this variable for you own variables with the user information
-dblocal = pymysql.connect(host="localhost",user= "root",password= "",database= "ksu") #for local connection
+dblocal = pymysql.connect(host="localhost",user= "root",password= "",database= "newksu") #for local connection
 
 
 

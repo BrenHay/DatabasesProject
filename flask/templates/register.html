@@ -1,0 +1,24 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+
+	<div class ="container">
+		<form action="/register" method = "POST">
+			<p><h2>Register</h2> </p>
+            <div class="mb-3">
+                <label for="options">Register as: </label>
+                <select name="option" id="accOptions">
+                    {% for option in options %}
+                    <option value="{{ option }}">{{ option }}</option>
+                    {% endfor %}                  
+                </select>
+            </div>
+            <p>Student/Instructor ID <input type="text" placeholder="ID" name = "id" id="id" /> (not needed for admins)</p>    
+			<p>Username <input type="text" placeholder="Username" name = "username" id="username" required/></p>
+			<p>Password <input type = "password" placeholder="Password" name = "password" id="password" required/></p>
+            <p>Email <input type = "email" placeholder="Something@something.com" name = "email" id="email" required/></p>
+			<p><input type = "submit" value = "Submit" /></p>
+            <div class="msg"> {{ msg }}</div>
+		</form>
+	</div>
+
+{% endblock %}
