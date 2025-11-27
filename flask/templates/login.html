@@ -1,0 +1,14 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+
+	<div class ="container">
+		<form action="/login" method = "POST">
+			<p><h2>Login</h2> 
+			<p>Username <input type="text" name = "username" id="username"/></p>
+			<p>Password <input type = "password" name = "password" id="password"/></p>
+			<p><input type = "submit" value = "Submit" /></p>
+            <div class="{{msg}}"> {{ msg }}</div>
+		</form>
+	</div>
+
+{% endblock %}

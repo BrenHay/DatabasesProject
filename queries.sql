@@ -122,6 +122,20 @@ create table prereq
      foreign key (prereq_id) references course (course_id)
     );
 
+CREATE TABLE IF NOT EXISTS `accounts` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `student_id` varchar(5),
+    `instructor_id` varchar(5),
+    `username` varchar(50) NOT NULL,
+    `password` varchar(255) NOT NULL,
+    `email` varchar(100) NOT NULL,
+    `permissions` varchar(100) NOT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (student_id) REFERENCES student(stu_ID),
+    FOREIGN KEY (instructor_id) REFERENCES instructor(ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 delete from prereq;
 delete from time_slot;
 delete from advisor;

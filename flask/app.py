@@ -1,54 +1,23 @@
 #! /usr/bin/python3
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+from werkzeug.security import generate_password_hash, check_password_hash
 import json
 import config
-
+import re
+import os
 #for the pymysql look at the faculty url, on that the two ways to access the CS database will be shown
 
 
 #Configuration for pymysql
 db = config.dblocal
 
-
-
 app = Flask(__name__)
+app.secret_key = os.urandom(24)    # SESSION FIX
 app.debug = True
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/hello')
-def hello():
-    return 'Hello message'
-
-@app.route('/hellothere')
-def hellothere():
-    name =  "General Kenobi"
-    return render_template("hellothere.html", values=name)
-
-@app.route('/search',  methods = ['GET','POST'])
-def search():
-    if request.method == 'POST':
-        myName = request.form['name']
-        myId = request.form['id']
-        values = {
-            'name': myName,
-            'id': myId }
-        return render_template('results.html', **values)
-    if request.method == 'GET':
-        return render_template('form.html')
-
-@app.route('/values')
-def values():
-    myInteger = 3
-    return render_template('values.html', value = myInteger)
-
-@app.route('/pokedex')
-def loop():
-    pokedex = ["Pikachu", "Charizard", "Squirtle", "Jigglypuff",  
-           "Bulbasaur", "Gengar", "Charmander", "Mew", "Lugia", "Gyarados"]     
-    return render_template('pokedex.html', pokedex = pokedex)
        
 @app.route('/student', methods = ['GET','POST'])
 def displayStudents():
@@ -218,7 +187,7 @@ def newStudent():
     if request.method == 'POST':
         myName = request.form['name']
         myId = request.form['id']
-        myDept = request.form['dept']        
+        myDept = request.form['dept']
         isTransfer = bool(request.form.get("is_active"))
         myCredits = request.form['credits']
         if not isTransfer:
@@ -240,57 +209,91 @@ def newStudent():
             edited.append(i[0])
         return render_template('newstudent.html', data=edited)
     
-@app.route('/countfaculty',  methods = ['GET','POST'])
-def countFaculty():
-    if request.method == 'GET':
+@app.route('/login',  methods = ['GET','POST'])
+def loginPage():
+    msg = ''
+    if request.method == "POST":
+        myUser = request.form["username"]
+        myPassword = request.form["password"]
+
         cursor = db.cursor()
-        sql = "SELECT dept_name as dept_name from department;"
-        cursor.execute(sql)        
-        data = cursor.fetchall()        
+        sql = """select * from accounts where username = %s"""
+        cursor.execute(sql, [myUser])
+        account = cursor.fetchone()
+
+        if account:
+            if check_password_hash(account[4], myPassword):
+                msg = "Logged in!"
+                session["logged-in"] = True
+                session["id"] = account[0]
+                session["student_id"] = account[1]
+                session["instructor_id"] = account[2]
+                session["username"] = account[3]
+                session["email"] = account[5]
+                session["permissions"] = account[6]
+            else:
+                msg = "Invalid username or password"
+        else:
+            msg = "Invalid username or password"
+
+    return render_template('login.html', msg=msg)
+
+@app.route('/register', methods = ['GET','POST'])
+def registerPage():
+    accOptions = ["STUDENT", "INSTRUCTOR", "ADMIN"]
+    msg = ''
+    cursor = db.cursor()
+    if request.method == "POST":
+        myID = request.form["id"]
+        myUser = request.form["username"]
+        myPassword = request.form["password"]
+        myPerm = request.form["option"]
+        myEmail = request.form["email"]
+
+        sql = """select * from accounts where username = %s"""
+        cursor.execute(sql, [myUser])
+        account = cursor.fetchall()
+        # Checks if account exists and if the email or password are invalid
+        if account:
+            msg = "User already exists!"
+            return render_template('register.html', options=accOptions, msg=msg)
+        elif not re.match(r'[^@]+@[^@]+\.[^@]+', myEmail):
+            msg = 'Invalid email address!'
+            return render_template('register.html', options=accOptions, msg=msg)
+        elif not re.match(r'[A-Za-z0-9]+', myUser):
+            msg = 'Username must contain only characters and numbers!'
+            return render_template('register.html', options=accOptions, msg=msg)
+        elif not myUser or not myPassword or not myEmail:
+            msg = 'Please fill out the form!'
+            return render_template('register.html', options=accOptions, msg=msg)
+        else:
+            hashedPassword = generate_password_hash(myPassword)
+
+        sql = """"""
+        # Changes SQL query based off of what type of account is being made
+        if myPerm == "STUDENT":
+            sql = """
+                    insert into accounts (student_id, username, password, email, permissions)
+                    values (%s, %s, %s, %s, %s)
+                """
+            cursor.execute(sql, [myID, myUser, hashedPassword, myEmail, myPerm])
+        elif myPerm == "INSTRUCTOR":
+            sql = """
+                    insert into accounts (instructor_id, username, password, email, permissions)
+                    values (%s, %s, %s, %s, %s)
+                """
+            cursor.execute(sql, [myID, myUser, hashedPassword, myEmail, myPerm])
+        elif myPerm == "ADMIN":
+            sql = """
+                    insert into accounts (username, password, email, permissions)
+                    values (%s, %s, %s, %s)
+                """
+            cursor.execute(sql, [myUser, hashedPassword, myEmail, myPerm])
+        db.commit()
         cursor.close()
-        edited = []
-        print(data)
-        for i in data:
-            edited.append(i[0])
-        return render_template('count.html', data = edited)
-    if request.method == 'POST':
-        dept = request.form['depts']  
-        cursor = db.cursor()      
-        sql = "SELECT dept_count(%s);"
-        cursor.execute(sql,[dept])
-        data = cursor.fetchall()
-        cursor.close()
-        edited = []
-        print(data)
-        for i in data:
-            edited.append(i[0])
-        return render_template('total.html', data=edited[0])
-    
-@app.route('/function',  methods = ['GET','POST'])
-def countdeptfuntion():
-    if request.method == 'POST':
-        if request.method == 'POST':
-            dept = request.form['dept']        
-            cursor = db.cursor()
-            sql = "SELECT dept_count(%s);"
-            cursor.execute(sql, [dept])
-            data = cursor.fetchall()
-            cursor.close()
-            edited = []
-            for i in data:
-                edited.append(i[0])
-        return render_template('countdept.html', data = edited[0])
-    if request.method == 'GET':
-        cursor = db.cursor()
-        sql ="SELECT dept_name as dept_name from department;"
-        cursor.execute(sql)
-        data = cursor.fetchall()        
-        cursor.close()
-        edited = []
-        print(data)
-        for i in data:
-            edited.append(i[0])
-        return render_template('function.html', data = edited)
+        msg = "Account created!"
+        
+    return render_template('register.html', options=accOptions, msg=msg)
 
 if __name__ == '__main__':    
     cursor = db.cursor()
