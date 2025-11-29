@@ -30,7 +30,7 @@ def displayStudents():
             cursor.close()
             print(data)
             #return f"Done!! Query Result is {data}"
-            return render_template('student.html', data=data)
+            return render_template('student/student.html', data=data)
         if request.method == 'POST':
             data = request.form["ID"]
             action = request.form["action"]
@@ -38,13 +38,13 @@ def displayStudents():
             if action == "delete":
                 print(data)
                 cursor = db.cursor()
-                sql = "delete from student where id = %s"
+                sql = "delete from student where stu_id = %s"
                 cursor.execute(sql, [data])
                 sql = "select * from student"
                 cursor.execute(sql)
                 data = cursor.fetchall()
                 cursor.close()    
-                return render_template('student.html',data= data)
+                return render_template('student/student.html',data= data)
             elif action == "view":
                 cursor = db.cursor()
                 sql = "select s.ID, s.name, t.course_id, t.sec_id, t.semester, t.year, t.grade FROM student s join takes t on s.ID = t.ID WHERE s.ID = %s"
@@ -97,15 +97,12 @@ def studentSchedule(id):
         cursor.close()
 
     return render_template(
-        "studentschedule.html",
+        "student/studentschedule.html",
         schedule=schedule,
         years=years,
         selected_year=selected_year,
         student_id=id
     )
-
-
-
 
 @app.route('/studentsearch', methods = ['GET','POST'])
 def studentSearch():        
@@ -183,7 +180,7 @@ def newStudent():
         print(data)
         for i in data:
             edited.append(i[0])
-        return render_template('newstudent.html', data = edited)
+        return render_template('student/newstudent.html', data = edited)
     if request.method == 'POST':
         myName = request.form['name']
         myId = request.form['id']
@@ -207,8 +204,186 @@ def newStudent():
         print(data)
         for i in data:
             edited.append(i[0])
-        return render_template('newstudent.html', data=edited)
+        return redirect(url_for("displayStudents"))
     
+@app.route("/studentedit/<stu_id>", methods = ["GET", "POST"])
+def editStudent(stu_id):
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = "SELECT dept_name as dept_name from department;"
+        cursor.execute(sql)
+        data = cursor.fetchall()        
+        edited = []
+        for i in data:
+            edited.append(i[0])
+
+        sql = "SELECT * FROM student WHERE stu_ID = %s"
+        cursor.execute(sql, [stu_id])
+        data = cursor.fetchone()
+        if data:
+            return render_template('student/studentedit.html', student_id=stu_id, depts=edited, name=data[1], dept_name=data[2], credits=data[3])
+    if request.method == "POST":
+        student_name = request.form["name"]
+        department = request.form["dept"]
+        tot_creds = request.form["credits"]
+        print(stu_id)
+        cursor = db.cursor()
+        sql = """
+                update student
+                set
+                    name = %s,
+                    dept_name = %s,
+                    tot_cred = %s
+                WHERE stu_ID = %s
+                """
+        cursor.execute(sql, [student_name, department, tot_creds, stu_id])
+
+        print("Rows affected:", cursor.rowcount)
+
+        db.commit()
+        cursor.close()
+        return redirect(url_for("displayStudents"))
+
+@app.route("/section", methods = ["GET", "POST"])
+def displaySection():
+    if request.method == 'GET':
+            #Function with pymysql
+            cursor = db.cursor()
+            sql = "SELECT * from section;"
+            cursor.execute(sql)            
+            data = cursor.fetchall()
+            cursor.close()
+            print(data)
+            #return f"Done!! Query Result is {data}"
+            return render_template('section/section.html', data=data)
+    if request.method == 'POST':
+            
+            action = request.form["action"]
+
+            if action == "delete":
+                data = json.loads(request.form["row"])
+                print(data)
+                cursor = db.cursor()
+                sql = """
+                    delete from section
+                    where course_id = %s AND sec_id = %s AND semester = %s AND year = %s
+                    """
+                cursor.execute(sql, [data[0], data[1], data[2], data[3]])
+                sql = "select * from section"
+                cursor.execute(sql)
+                db.commit()
+                data = cursor.fetchall()
+                cursor.close()    
+                return render_template('section/section.html',data= data)
+
+
+@app.route('/newsection',  methods = ['GET','POST'])
+def newSection():
+    if request.method == 'GET':
+        cursor = db.cursor()
+        sql = "SELECT course_id from course;"
+        cursor.execute(sql)
+        data = cursor.fetchall()
+
+        sql = """SELECT * FROM classroom"""   
+        cursor.execute(sql)
+        rooms = cursor.fetchall()
+        
+        sql = """SELECT * FROM time_slot"""
+        cursor.execute(sql)
+        timeSlots = cursor.fetchall()
+
+        cursor.close()
+        edited = []
+        print(data)
+        for i in data:
+            edited.append(i[0])
+        classrooms = []
+        for i in rooms:
+            classrooms.append(i)
+        semester = ["Summer", "Fall", "Spring"]
+        return render_template('section/newsection.html', course = edited, classrooms=classrooms, semester=semester, timeslots=timeSlots)
+    if request.method == 'POST':
+        myCourse = request.form['course']
+        myId = request.form['sec_id']
+        mySem = request.form['sem']
+        myYear = request.form['year']
+        myRoom = request.form["room"]
+        mySlot = request.form["slot"]
+        cursor = db.cursor()
+        sql = "Insert into section values(%s, %s, %s, %s, %s, %s)"
+        cursor.execute(sql,[myCourse, myId, mySem, myYear, myRoom, mySlot])
+        data = cursor.fetchall()  
+        db.commit() 
+        cursor.close()
+        return redirect(url_for("displaySection"))
+
+@app.route("/editsection/<course_id>/<sec_id>/<sem>/<int:year>", methods=['GET','POST'])
+def editSection(course_id, sec_id, sem, year):
+    cursor = db.cursor()
+
+    if request.method == 'GET':
+        cursor = db.cursor()
+        sql = "SELECT course_id from course;"
+        cursor.execute(sql)
+        data = cursor.fetchall()
+
+        sql = """SELECT * FROM classroom"""   
+        cursor.execute(sql)
+        rooms = cursor.fetchall()
+        
+        sql = """SELECT * FROM time_slot"""
+        cursor.execute(sql)
+        timeSlots = cursor.fetchall()
+
+        edited = []
+        print(data)
+        for i in data:
+            edited.append(i[0])
+        classrooms = []
+        for i in rooms:
+            classrooms.append(i)
+        semester = ["Summer", "Fall", "Spring"]
+
+        # Fetch the current section row to pre-fill the form
+        cursor.execute("""
+            SELECT * FROM section
+            WHERE course_id=%s AND sec_id=%s AND semester=%s AND year=%s
+        """, [course_id, sec_id, sem, year])
+        section = cursor.fetchone()  # section = (course_id, sec_id, semester, year, roomID, time_slot_id)
+
+        cursor.close()
+
+        semesters = ["Summer", "Fall", "Spring"]
+        return render_template(
+            'section/editsection.html',
+            classrooms=classrooms,
+            timeslots=timeSlots,
+            section=section
+        )
+
+    if request.method == 'POST':
+        myRoom = request.form['room']
+        mySlot = request.form['slot']
+
+        cursor.execute("""
+            SELECT * FROM section
+            WHERE course_id=%s AND sec_id=%s AND semester=%s AND year=%s
+        """, [course_id, sec_id, sem, year])
+        section = cursor.fetchone()  # section = (course_id, sec_id, semester, year, roomID, time_slot_id)
+        
+        # Update the section instead of insert
+        cursor.execute("""
+            UPDATE section
+            SET roomID=%s, time_slot_id=%s
+            WHERE course_id=%s AND sec_id=%s AND semester=%s AND year=%s
+        """, [myRoom, mySlot, section[0], section[1], section[2], section[3]])
+
+        db.commit()
+        cursor.close()
+        return redirect(url_for("displaySection"))
+
+
 @app.route('/login',  methods = ['GET','POST'])
 def loginPage():
     msg = ''

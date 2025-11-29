@@ -1,0 +1,64 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="/newsection" method="POST">
+        <p>
+        <h2>New Section:</h2>
+
+        <div class="mb-3">
+            <label for="courses">Choose a Course:</label>
+            <select name="course" id="course">
+                {% for class in course %}
+                <option value="{{ class }}">{{ class }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput2" class="form-label">Section ID (Only important if there are secions of the same class):</label>
+            <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Section ID" name="sec_id" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="semesters">Choose a Semester:</label>
+            <select name="sem" id="sem">
+                {% for sem in semester %}
+                <option value="{{ sem }}">{{ sem }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput2" class="form-label">Year:</label>
+            <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Year" name="year" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="classrooms">Choose a Classroom:</label>
+            <select name="room" id="room">
+                {% for room in classrooms %}
+                <option value="{{ room[0] }}">{{ room[1] + " " + room[2] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="timeSlots">Timeslot:</label>
+            <select name="slot" id="slot">
+                {% for slot in timeslots %}
+                <option value="{{ slot[0] }}">
+                    {{ slot[1] }}
+                    {{ "%02d:%02d" % (slot[2].seconds // 3600, (slot[2].seconds // 60) % 60) }}
+                    to
+                    {{ "%02d:%02d" % (slot[3].seconds // 3600, (slot[3].seconds // 60) % 60) }}
+                </option>
+
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create New</button>
+    </form>
+</div>
+
+{% endblock %}
