@@ -295,6 +295,22 @@ def registerPage():
         
     return render_template('register.html', options=accOptions, msg=msg)
 
+@app.route('/profile', methods = ['GET','POST'])
+def profilePage():
+    cursor = db.cursor()
+    if request.method == "GET":
+        if 'logged-in' in session:
+            cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['id']])
+            account = cursor.fetchone()
+            userData = {}
+            if session["permissions"] == "INSTRUCTOR": 
+                cursor.execute('SELECT * FROM instructor WHERE id = %s', [session["instructor_id"]])
+                userData = cursor.fetchone()
+            print(account)
+            return render_template('profile.html', account=account, user_data = userData)
+    cursor.close()
+    return redirect(url_for('loginPage'))
+
 if __name__ == '__main__':    
     cursor = db.cursor()
     sql = "SELECT * from student;"
