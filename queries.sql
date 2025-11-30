@@ -8,10 +8,10 @@ create table buildings
 );
 
 create table classroom
-    (roomID numeric (6, 0),
-     building        varchar(20),
-     room_number        varchar(7),
-     capacity        numeric(4,0),
+    (roomID numeric (6, 0) NOT NULL AUTO_INCREMENT,
+     building        NOT NULL varchar(20),
+     room_number       NOT NULL varchar(7),
+     capacity        NOT NULL numeric(4,0),
      primary key (roomId),
      foreign key (building) references buildings (building)
     );
