@@ -1,0 +1,30 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="/newtimeslot" method="POST">
+        <p><h2>New Timeslot:</h2> 
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput" class="form-label">Timeslot ID:</label>
+            <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Timeslot ID" name="ID">
+        </div>
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput" class="form-label">Day:</label>
+            <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Day ['M', 'T', 'W', 'R', 'F']" name="day">
+        </div>
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput" class="form-label">Start Time:</label>
+            <input type="text" class="form-control" id="formGroupExampleInput" placeholder="HH:MM:SS" name="start">
+        </div>
+
+        <div class="mb-3" id="creditsField">
+            <label for="formGroupExampleInput3" class="form-label">End Time</label>
+            <input type="text" class="form-control" id="formGroupExampleInput3" placeholder="HH:MM:SS" name="end">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create New</button>
+    </form>
+</div>
+{% endblock %}

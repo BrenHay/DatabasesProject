@@ -1,0 +1,30 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="/newclassroom" method="POST">
+        <p><h2>New Classroom:</h2> 
+
+        <div class="mb-3">
+            <label for="buildings">Choose a Building:</label>
+            <select name="building" id="building">
+                {% for build in buildings %}
+                <option value="{{ build }}">{{ build }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput2" class="form-label">Room Number:</label>
+            <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Room Number" name="roomNo" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput2" class="form-label">Capacity:</label>
+            <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Capacity" name="capacity" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create New</button>
+    </form>
+</div>
+
+{% endblock %}

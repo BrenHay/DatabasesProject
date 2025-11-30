@@ -1,0 +1,34 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="{{url_for('editInstructor', i_ID = ID)}}" method="POST">
+        <p><h2>New Instructor:</h2> 
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput" class="form-label">ID:</label>
+            <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Instructor ID" name="ID" value="{{ID}}">
+        </div>
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput" class="form-label">Name:</label>
+            <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Instructor Name" name="name" value="{{name}}">
+        </div>
+
+        <div class="mb-3">
+            <label for="depts">Choose a Department:</label>
+            <select name="dept" id="dept">
+                {% for dept in data %}
+                <option value="{{ dept }}" {% if dept==dept_name %}selected{% endif %}>{{dept}}</option>
+                {% endfor %}                  
+            </select>
+        </div>
+
+        <div class="mb-3" id="creditsField">
+            <label for="formGroupExampleInput3" class="form-label">Salary</label>
+            <input type="text" class="form-control" id="formGroupExampleInput3" placeholder="Budget" name="salary" value="{{salary}}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create New</button>
+    </form>
+</div>
+{% endblock %}
