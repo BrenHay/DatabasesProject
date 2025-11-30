@@ -1,5 +1,5 @@
-create schema newnewKSU;
-use newnewKSU;
+create schema newKSU;
+use newKSU;
 
 create table buildings
 (
