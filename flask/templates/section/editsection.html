@@ -1,0 +1,56 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form
+        action="{{ url_for('editSection', course_id=section[0], sec_id=section[1], sem=section[2], year=section[3]) }}"
+        method="POST">
+
+        <h2>Edit Section:</h2>
+
+        <div class="mb-3">
+            Course: {{section[0]}}
+        </div>
+
+        <div class="mb-3">
+            Section ID: {{section[1]}}
+        </div>
+
+        <div class="mb-3">
+            Semester: {{section[2]}}
+        </div>
+
+        <div class="mb-3">
+            Year: {{section[3]}}
+        </div>
+
+        <div class="mb-3">
+            <label for="classrooms">Choose a Classroom:</label>
+            <select name="room" id="room">
+                {% for room in classrooms %}
+                <option value="{{ room[0] }}" {% if room[0]==section[4] %}selected{% endif %}>
+                    {{ room[1] }} {{ room[2] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="timeSlots">Timeslot:</label>
+            <select name="slot" id="slot">
+                {% for slot in timeslots %}
+                <option value="{{ slot[0] }}" {% if slot[0]==section[5] %}selected{% endif %}>
+                    {{ slot[1] }}
+                    {{ "%02d:%02d" % (slot[2].seconds // 3600, (slot[2].seconds // 60) % 60) }}
+                    to
+                    {{ "%02d:%02d" % (slot[3].seconds // 3600, (slot[3].seconds // 60) % 60) }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Section</button>
+    </form>
+
+</div>
+
+{% endblock %}

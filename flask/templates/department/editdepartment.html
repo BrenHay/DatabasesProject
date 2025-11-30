@@ -1,0 +1,29 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="{{url_for('editDepartment', dept_name=deptName)}}" method="POST">
+        <p><h2>Edit Department:</h2> 
+
+        <div class="mb-3">
+            <label for="formGroupExampleInput" class="form-label">Department Name:</label>
+            <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Department Name" name="deptName" value="{{deptName}}">
+        </div>
+
+        <div class="mb-3">
+            <label for="buildings">Choose a Building:</label>
+            <select name="building" id="building">
+                {% for build in data %}
+                <option value="{{ build }}" {% if build==building %}selected{% endif %}>{{ build }}</option>
+                {% endfor %}                  
+            </select>
+        </div>
+
+        <div class="mb-3" id="creditsField">
+            <label for="formGroupExampleInput3" class="form-label">Budget</label>
+            <input type="text" class="form-control" id="formGroupExampleInput3" placeholder="Budget" name="budget" value="{{budget}}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create New</button>
+    </form>
+</div>
+{% endblock %}
