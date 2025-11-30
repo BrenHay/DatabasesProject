@@ -1,0 +1,26 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="{{url_for('changeInstructor', i_id=instructor, course_id=course, sec_id=section, semester=semester, year=year)}}" method="POST">
+        <p>
+        <h2>Change Instructor:</h2>
+
+        <div class="mb-3">
+            <label for="teachers">Choose an Instructor:</label>
+            <select name="teach" id="teach">
+                {% for teach in instructors %}
+                <option value="{{ teach[0] }}" {% if teach[0]==instructor %}selected{% endif %}>{{teach[1]}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <p>
+            Section:
+            <br>
+            Course: {{course}}, Section: {{section}}, Semester: {{semester}}, year: {{year}}
+        </p>
+
+        <button type="submit" class="btn btn-primary">Assign</button>
+    </form>
+</div>
+{% endblock %}
