@@ -1,0 +1,54 @@
+{% extends '/include/layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        Instructor
+    </h1>
+</div>
+
+<div class="container">
+    <table cellpadding="5" cellspacing="5" class="table table-hover">
+        <tr>
+            <th>Teacher ID</th>
+            <th>Course ID</th>
+            <th>Section ID</th>
+            <th>Semester</th>
+            <th>Year</th>
+            <th></th>
+            <th>
+                <div>
+                    <a href="{{url_for('assignInstructor')}}">
+                        <button class="btn btn-outline-success">Assign Instructor</button>
+                    </a>
+                </div>
+            </th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            {% for d in row %}
+            <td>{{d}}</td>
+
+            {% endfor %}
+
+            </td>
+            <td>
+                <form method="POST">
+                    <input type="hidden" name="ID" value="{{ row[0] }}">
+                    <button type="submit" name="action" value="delete" class="btn btn-outline-danger">
+                            Unassign
+                    </button>
+                </form>
+            </td>
+            <td>
+                <a href="{{ url_for('changeInstructor', i_id=row[0], course_id=row[1], sec_id=row[2], semester=row[3], year=row[4]) }}">
+                    <button class="btn btn-outline-success">
+                        Change
+                    </button>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

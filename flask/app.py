@@ -850,6 +850,98 @@ def editTimeslot(t_id, i_day):
         cursor.close()
         return redirect(url_for("displayTimeslots"))
 
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\///////////////////////////////////////////////////////////////////////////////////////
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ ASSIGN ////////////////////////////////////////////////////////////////////////////////////
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\////////////////////////////////////////////////////////////////////////////////////////
+
+@app.route("/teachertoclass", methods = ["GET", "POST"])
+def displayTeaches():
+    if request.method == 'GET':
+            #Function with pymysql
+            cursor = db.cursor()
+            sql = "SELECT * from teaches"
+            cursor.execute(sql)            
+            data = cursor.fetchall()
+            cursor.close()
+            
+            #return f"Done!! Query Result is {data}"
+            return render_template('assignteacher/teachertoclass.html', data=data)
+    if request.method == 'POST':  
+            action = request.form["action"]
+            if action == "delete":
+                myID = request.form["ID"]
+                myDay = request.form["day"]
+                cursor = db.cursor()
+                sql = """
+                    delete from time_slot
+                    where time_slot_id = %s and day = %s
+                    """
+                cursor.execute(sql, [myID, myDay])
+                db.commit()
+                sql = "select * from time_slot"
+                cursor.execute(sql)
+                data = cursor.fetchall()
+                cursor.close()    
+                return render_template('timeslot/timeslot.html',data=data)
+                
+
+@app.route('/assign', methods = ["GET", "POST"])
+def assignInstructor():
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = """select * from instructor"""
+        cursor.execute(sql)
+        instructors = cursor.fetchall()
+        sql = """select * from section"""
+        cursor.execute(sql)
+        sections = cursor.fetchall()
+        cursor.close()
+        return render_template('assignteacher/assign.html', instructors=instructors, sections=sections)
+    
+    if request.method == "POST":
+        myTeach = request.form["teach"]
+        myCourse = request.form["course_id"]
+        mySection = request.form["sec_id"]
+        mySemester = request.form["semester"]
+        myYear = request.form["year"]
+
+        cursor = db.cursor()
+        sql = """
+                insert into teaches(ID, course_id, sec_id, semester, year)
+                values (%s, %s, %s, %s, %s)
+              """
+        cursor.execute(sql, [myTeach, myCourse, mySection, mySemester, myYear])
+        db.commit()
+        cursor.close()
+        return redirect(url_for("displayTeaches"))
+    
+@app.route('/changeinstructor/<i_id>/<course_id>/<sec_id>/<semester>/<year>', methods = ["GET", "POST"])
+def changeInstructor(i_id, course_id, sec_id, semester, year):
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = """select * from instructor"""
+        cursor.execute(sql)
+        instructors = cursor.fetchall()
+        sql = """select * from section"""
+        cursor.execute(sql)
+        sections = cursor.fetchall()
+        cursor.close()
+        return render_template('assignteacher/changeinstructor.html', instructor=i_id, course=course_id, section=sec_id, semester=semester, year=year, instructors=instructors)
+    
+    if request.method == "POST":
+        myTeach = request.form["teach"]
+
+        cursor = db.cursor()
+        sql = """
+                update teaches
+                set ID = %s
+                where course_id = %s and sec_id = %s and semester = %s and year = %s and ID = %s
+              """
+        cursor.execute(sql, [myTeach, course_id, sec_id, semester, year, i_id])
+        db.commit()
+        cursor.close()
+        return redirect(url_for("displayTeaches"))
+
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ LOGIN AND REGISTER PAGES ////////////////////////////////
 @app.route('/login',  methods = ['GET','POST'])
 def loginPage():
