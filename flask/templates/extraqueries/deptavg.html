@@ -1,0 +1,26 @@
+{% extends '/include/layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        Department Averages
+    </h1>
+</div>
+
+<div class="container">
+    <table cellpadding="5" cellspacing="5" class="table table-hover">
+        <tr>
+            <th>Department Name</th>
+            <th>Average GPA</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            {% for d in row %}
+            <td>{{d}}</td>
+
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
