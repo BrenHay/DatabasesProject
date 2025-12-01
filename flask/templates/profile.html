@@ -3,8 +3,14 @@
 
 	<div class ="container">
 		<form action="/profile" method = "POST">
-			<p><h2>Profile</h2> 
+			{% if account[6] == "ADMIN" %}
+				<p><h2>Profile - Admin</h2> 
+				<p>Account ID - {{ account[0] }}</p>
+				<p>Change Username <input type="text" name = "username" id="username" value="{{ account[3] }}"/></p>
+				<p>Change Password <input type = "text" name = "password" id="password"/></p>
+			{% endif %}
 			{% if account[6] == "INSTRUCTOR" %}
+				<p><h2>Profile - Instructor</h2> 
 				<p>ID - {{ account[2] }}</p>
 				<p>Department - {{ user_data[2] }}</p>
 				<p>Salary - {{ user_data[3] }}</p>
@@ -12,7 +18,17 @@
 				<p>Change Username <input type="text" name = "username" id="username" value="{{ account[3] }}"/></p>
 				<p>Change Password <input type = "text" name = "password" id="password"/></p>
 			{% endif %}
-			<p><input type = "submit" value = "Update" /></p>
+			{% if account[6] == "STUDENT" %}
+				<p><h2>Profile - Student</h2> 
+				<p>ID - {{ account[1] }}</p>
+				<p>Department - {{ user_data[2] }}</p>
+				<p>Total Credits - {{ user_data[3] }}</p>
+				<p>Change Name <input type="text" name = "name" id="name" value="{{ user_data[1] }}"/></p>
+				<p>Change Username <input type="text" name = "username" id="username" value="{{ account[3] }}"/></p>
+				<p>Change Password <input type = "text" name = "password" id="password"/></p>
+			{% endif %}
+			<button type = "submit" name="action" value="update">Update Profile</button>
+			<button type = "submit" name="action" value="log_out">Log Out</button>
 		</form>
 	</div>
 
