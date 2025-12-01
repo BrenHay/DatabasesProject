@@ -44,6 +44,15 @@
           <a class="nav-link" href="/teachertoclass">Assign Instructor</a>
         </li>
         {% endif %}
+
+        {% if session["permissions"] == "STUDENT" %}
+        <li class="nav-item">
+          <a class="nav-link" href="/viewgrades">View Grades</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/coursereg">Course Register</a>
+        </li>
+        {% endif %}
         <li class="nav-item">
           <a class="nav-link" href="/studentsearch">Student Search</a>
         </li>
