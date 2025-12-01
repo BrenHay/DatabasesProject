@@ -1049,6 +1049,150 @@ def assignStudentToAdvisor():
         cursor.close()
         return redirect(url_for("assignAdvisor"))
 
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ GRADE STUFF ////////////////////////////////////////
+@app.route('/grades',  methods = ['GET','POST'])
+def gradePage():
+    if session["permissions"] != "INSTRUCTOR":
+        return
+    if request.method == 'GET':
+        #Function with pymysql
+        cursor = db.cursor()
+        sql = """ 
+                select student.name, takes.stu_ID, takes.course_id, takes.sec_id, takes.semester, takes.year, takes.grade
+                from student, takes 
+                where (course_id, sec_id, semester, year) in (
+                    select course_id, sec_id, semester, year 
+                    from teaches 
+                    where ID = %s
+                ) && student.name in (select name from student where stu_ID = takes.stu_ID)
+            """
+        cursor.execute(sql, [session["instructor_id"]]) 
+        data = cursor.fetchall()
+        cursor.close()
+        return render_template('grades/grades.html', data=data)
+    return render_template('grades/grades.html')
+
+@app.route('/updategrade/<stu_ID>/<course_id>/<sec_id>/<semester>/<year>/<grade>', methods = ["GET", "POST"])
+def editGrade(stu_ID, course_id, sec_id, semester, year, grade):
+    if session["permissions"] != "INSTRUCTOR":
+             return
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = """ 
+                select * from takes where stu_ID = %s, course_id = %s, sec_id = %s, semester = %s, year = %s, grade = %s
+            """
+        cursor.execute(sql, [stu_ID, course_id, sec_id, semester, year, grade])
+        takes = cursor.fetchone()
+        return render_template('grades/updategrade.html', takes=takes)
+    if request.method == "POST":
+        myTitle = request.form["title"]
+        myDept = request.form["dept"]
+        myCreds = request.form["credits"]
+        cursor = db.cursor()
+        sql = """ 
+                update takes 
+                set grade = %s
+                where (stu_ID, course_id, sec_id, semester, year) in (%s, %s, %s, %s, %s)
+            """
+        cursor.execute(sql, [grade, stu_ID, course_id, sec_id, semester, year])
+        db.commit()
+        cursor.close()
+        return redirect(url_for("grades"))
+        
+
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ PREREQ ///////////////////////////////////////////////
+@app.route("/prereq", methods = ["GET", "POST"])
+def prereqPage():
+    if session["permissions"] != "INSTRUCTOR":
+             return
+    if request.method == 'GET':
+            #Function with pymysql
+            cursor = db.cursor()
+            sql = "SELECT * from prereq;"
+            cursor.execute(sql)            
+            data = cursor.fetchall()
+            cursor.close()
+            print(data)
+            #return f"Done!! Query Result is {data}"
+            return render_template('prereq/prereq.html', data=data)
+    if request.method == 'POST':
+            action = request.form["action"]
+            if action == "delete":
+                course_id = request.form["course_id"]
+                prereq_id = request.form["prereq_id"]
+                cursor = db.cursor()
+                sql = """
+                    delete from prereq
+                    where course_id = %s AND prereq_id = %s
+                    """
+                cursor.execute(sql, [course_id, prereq_id])
+                sql = "select * from prereq"
+                cursor.execute(sql)
+                db.commit()
+                data = cursor.fetchall()
+                cursor.close()    
+                return render_template('prereq/prereq.html',data= data)
+
+@app.route('/editprereq/<course_id>/<prereq_id>', methods = ["GET", "POST"])
+def editPrereq(course_id, prereq_id):
+    if session["permissions"] != "INSTRUCTOR":
+             return
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = """select * from prereq WHERE course_id = %s AND prereq_id = %s"""
+        cursor.execute(sql, [course_id, prereq_id])
+        course = cursor.fetchone()
+        sql = """select course_id from course"""
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        cursor.close()
+        edited = []
+        for i in data:
+            edited.append(i[0])
+        return render_template('prereq/editprereq.html', courseID=course_id, prereqID=prereq_id, data=edited)
+    if request.method == "POST":
+        newCourseID = request.form["course_id"]
+        newPrereqID = request.form["prereq_id"]
+        cursor = db.cursor()
+        print([newCourseID, newPrereqID, course_id, prereq_id])
+        sql = """
+                update prereq
+                set prereq_id = %s
+                WHERE course_id = %s AND prereq_id = %s
+              """
+        cursor.execute(sql, [newPrereqID, course_id, prereq_id])
+        db.commit()
+        cursor.close()
+        return redirect(url_for("prereqPage"))
+
+@app.route('/newPrereq', methods = ["GET", "POST"])
+def newPrereq():
+    if session["permissions"] != "INSTRUCTOR":
+             return
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = """select course_id from course"""
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        cursor.close()
+        edited = []
+        for i in data:
+            edited.append(i[0])
+        return render_template('prereq/newprereq.html', data=edited)
+    
+    if request.method == "POST":
+        myCourse = request.form["course_id"]
+        myPrereq = request.form["prereq_id"]
+        cursor = db.cursor()
+        sql = """
+                insert into prereq(course_id, prereq_id)
+                values (%s, %s)
+              """
+        cursor.execute(sql, [myCourse, myPrereq])
+        db.commit()
+        cursor.close()
+        return redirect(url_for("prereqPage"))
+
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ LOGIN AND REGISTER PAGES ////////////////////////////////
 @app.route('/login',  methods = ['GET','POST'])
 def loginPage():

@@ -1,0 +1,27 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="/newPrereq" method="POST">
+        <p><h2>New Prerequisite:</h2> 
+
+        <div class="mb-3">
+            <label for="courses">Choose a Course:</label>
+            <select name="course_id" id="course_id">
+                {% for course_id in data %}
+                <option value="{{ course_id }}">{{ course_id }}</option>
+                {% endfor %}                  
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="depts">Choose a Prerequisite:</label>
+            <select name="prereq_id" id="prereq_id">
+                {% for course_id in data %}
+                <option value="{{ course_id }}">{{ course_id }}</option>
+                {% endfor %}                  
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create New</button>
+    </form>
+</div>
+{% endblock %}
