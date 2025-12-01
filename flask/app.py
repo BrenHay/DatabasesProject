@@ -1125,6 +1125,190 @@ def courseRegister():
 
 
      
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ EXTRA QUERIES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+@app.route('/deptavg', methods = ['GET', 'POST'])
+def deptAverage():
+     if request.method == "GET":
+          cursor = db.cursor()
+          sql = """
+                SELECT 
+                d.dept_name,
+                AVG(
+                CASE t.grade
+                    WHEN 'A'  THEN 4.0
+                    WHEN 'A-' THEN 3.7
+                    WHEN 'B+' THEN 3.3
+                    WHEN 'B'  THEN 3.0
+                    WHEN 'B-' THEN 2.7
+                    WHEN 'C+' THEN 2.3
+                    WHEN 'C'  THEN 2.0
+                    WHEN 'C-' THEN 1.7
+                    WHEN 'D+' THEN 1.3
+                    WHEN 'D'  THEN 1.0
+                    WHEN 'F'  THEN 0.0
+                END
+                ) AS avg_gpa
+                FROM department d
+                JOIN student s 
+                ON s.dept_name = d.dept_name
+                JOIN takes t
+                ON t.stu_id = s.stu_id
+                WHERE t.grade IS NOT NULL
+                GROUP BY d.dept_name;
+                """
+          cursor.execute(sql)
+          data = cursor.fetchall()
+          cursor.close()
+          return render_template("extraqueries/deptavg.html", data=data, highest=["", ""], lowest=["", ""])
+     
+@app.route('/totaldept', methods = ["GET", "POST"])
+def deptartmentTotal():
+     if request.method == "GET":
+        cursor = db.cursor()
+        sql = """select dept_name, COUNT(*) as stu_count from student group by dept_name"""
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        cursor.close()
+        return render_template("extraqueries/totaldept.html", data=data)
+     if request.method == "POST":
+          cursor = db.cursor()
+          action = request.form["action"]
+          sql = ""
+          if action == "enrolled":
+               sql = """
+                    select dept_name, COUNT(*) as stu_count from student 
+                    where EXISTS(
+    	            select stu_ID from takes
+    	            where takes.stu_ID = student.stu_ID
+                    )
+                    group by dept_name
+                    """
+          elif action == "unenrolled":
+               sql = """select dept_name, COUNT(*) as stu_count from student group by dept_name"""
+          cursor.execute(sql)
+          data = cursor.fetchall()
+          cursor.close()
+          return render_template("extraqueries/totaldept.html", data=data)
+     
+@app.route('/gradecompare', methods = ["GET", "POST"])
+def compareGrades():
+    semesters = ["Spring", "Summer", "Fall"]
+    if request.method == "GET":
+         return render_template("extraqueries/gradecompare.html", semesters=semesters)
+    if request.method == "POST":
+         mySem = request.form["sem"]
+         cursor = db.cursor()
+         sql = """
+                SELECT course_id, avg_gpa
+                FROM (
+                SELECT
+                course_id,
+                AVG(
+                    CASE grade
+                        WHEN 'A'  THEN 4.0
+                        WHEN 'A-' THEN 3.7
+                        WHEN 'B+' THEN 3.3
+                        WHEN 'B'  THEN 3.0
+                        WHEN 'B-' THEN 2.7
+                        WHEN 'C+' THEN 2.3
+                        WHEN 'C'  THEN 2.0
+                        WHEN 'C-' THEN 1.7
+                        WHEN 'D+' THEN 1.3
+                        WHEN 'D'  THEN 1.0
+                        WHEN 'F'  THEN 0.0
+                    END
+                ) AS avg_gpa
+                FROM takes
+                where semester = %s and grade is not null
+                GROUP BY course_id
+                ) AS gpa_by_course
+                ORDER BY avg_gpa DESC
+                LIMIT 1;"""
+         cursor.execute(sql, [mySem])
+         highest = cursor.fetchone()
+         sql = """
+                SELECT course_id, avg_gpa
+                FROM (
+                SELECT
+                course_id,
+                AVG(
+                    CASE grade
+                        WHEN 'A'  THEN 4.0
+                        WHEN 'A-' THEN 3.7
+                        WHEN 'B+' THEN 3.3
+                        WHEN 'B'  THEN 3.0
+                        WHEN 'B-' THEN 2.7
+                        WHEN 'C+' THEN 2.3
+                        WHEN 'C'  THEN 2.0
+                        WHEN 'C-' THEN 1.7
+                        WHEN 'D+' THEN 1.3
+                        WHEN 'D'  THEN 1.0
+                        WHEN 'F'  THEN 0.0
+                    END
+                ) AS avg_gpa
+                FROM takes
+                where semester = %s
+                GROUP BY course_id
+                ) AS gpa_by_course
+                ORDER BY avg_gpa ASC
+                LIMIT 1;"""
+         cursor.execute(sql, [mySem])
+         lowest = cursor.fetchone()
+         return render_template("extraqueries/gradecompare.html", semesters=semesters, highest=highest, lowest=lowest)
+    
+@app.route("/gradesbysem", methods = ["GET", "POST"])
+def getAvgBySem():
+     semesters = ["Spring", "Summer", "Fall"]
+     if request.method == "GET":
+          return render_template("extraqueries/gradesbysem.html", semesters=semesters)
+     if request.method == "POST":
+          myStart = request.form["sem1"]
+          myEnd = request.form["sem2"]
+          cursor = db.cursor()
+          sql = """
+                SELECT
+                course_id,
+                AVG(
+                CASE grade
+                WHEN 'A'  THEN 4.0
+                WHEN 'A-' THEN 3.7
+                WHEN 'B+' THEN 3.3
+                WHEN 'B'  THEN 3.0
+                WHEN 'B-' THEN 2.7
+                WHEN 'C+' THEN 2.3
+                WHEN 'C'  THEN 2.0
+                WHEN 'C-' THEN 1.7
+                WHEN 'D+' THEN 1.3
+                WHEN 'D'  THEN 1.0
+                WHEN 'F'  THEN 0.0
+                END
+                ) AS avg_gpa
+                FROM takes
+                WHERE 
+                CASE semester
+                WHEN 'Spring' THEN 1
+                WHEN 'Summer' THEN 2
+                WHEN 'Fall'   THEN 3
+                END
+                BETWEEN
+                CASE %s
+                WHEN 'Spring' THEN 1
+                WHEN 'Summer' THEN 2
+                    WHEN 'Fall'   THEN 3
+                END
+                AND
+                CASE %s
+                WHEN 'Spring' THEN 1
+                WHEN 'Summer' THEN 2
+                WHEN 'Fall'   THEN 3
+                END
+                GROUP BY course_id;
+                """
+          cursor.execute(sql, [myStart, myEnd])
+          data = cursor.fetchall()
+          return render_template("extraqueries/gradesbysem.html", semesters=semesters, data=data)
+
 
 
 

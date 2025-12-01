@@ -53,9 +53,23 @@
           <a class="nav-link" href="/coursereg">Course Register</a>
         </li>
         {% endif %}
+        {% if session["permissions"] == "INSTRUCTOR" %}
         <li class="nav-item">
-          <a class="nav-link" href="/studentsearch">Student Search</a>
+          <a class="nav-link" href="/deptavg">Department Averages</a>
         </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/totaldept">Total Students in Dept</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/gradecompare">Grade Compare</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/gradesbysem">Grade By Semester</a>
+        </li>
+        {% endif %}
       </ul>
     </div>
   </div>

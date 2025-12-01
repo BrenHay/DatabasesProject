@@ -1,0 +1,54 @@
+{% extends '/include/layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        Highest and Lowest GPA per Semester
+    </h1>
+</div>
+
+
+
+<form method="POST">
+    <div class="mb-3">
+            <label for="semesters">Start Semester:</label>
+            <select name="sem1" id="sem1">
+                {% for sem1 in semesters %}
+                <option value="{{ sem1 }}"> {{loop.index}} - {{ sem1 }}</option>
+                {% endfor %}
+            </select>
+    </div>
+
+    <div class="mb-3">
+            <label for="semesters">End Semester:</label>
+            <select name="sem2" id="sem2">
+                {% for sem2 in semesters %}
+                <option value="{{ sem2 }}">{{loop.index}} - {{ sem2 }}</option>
+                {% endfor %}
+            </select>
+    </div>
+    
+    <button type="submit">
+        Get Grades
+    </button>
+</form>
+
+{% if data %}
+<div class="container">
+    <table cellpadding="5" cellspacing="5" class="table table-hover">
+        <tr>
+            <th>Course ID</th>
+            <th>Average GPA</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            {% for d in row %}
+            <td>{{d}}</td>
+
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+{% endblock %}

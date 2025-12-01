@@ -1,0 +1,37 @@
+{% extends '/include/layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        Students Per Department
+    </h1>
+</div>
+
+<div style="text-align: center;">
+    <form method="POST">
+        <button type="submit" name="action" value="enrolled">
+            Enrolled Only
+        </button>
+        <button type="submit" name="action" value="unenrolled">
+            Include Unenrolled
+        </button>
+    </form>
+</div>
+
+<div class="container">
+    <table cellpadding="5" cellspacing="5" class="table table-hover">
+        <tr>
+            <th>Department Name</th>
+            <th>Count</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            {% for d in row %}
+            <td>{{d}}</td>
+
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
