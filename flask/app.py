@@ -994,6 +994,61 @@ def changeInstructor(i_id, course_id, sec_id, semester, year):
         cursor.close()
         return redirect(url_for("displayTeaches"))
 
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ ADVISOR STUFF /////////////////////////////////////
+@app.route('/assignadvisor', methods = ["GET", "POST"])
+def assignAdvisor():
+    if session["permissions"] != "INSTRUCTOR":
+        return
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = """select * from student where stu_ID in (select s_ID from advisor where i_ID = %s)"""
+        cursor.execute(sql, [session["instructor_id"]])
+        data = cursor.fetchall()
+        cursor.close()
+        return render_template('advisor/assignadvisor.html', data=data)
+    
+    if request.method == "POST":
+        action = request.form["action"]
+        if action == "delete":
+            myID = request.form["ID"]
+            cursor = db.cursor()
+            sql = """
+                delete from advisor
+                where s_id = %s and i_id = %s
+                """
+            cursor.execute(sql, [myID, session["instructor_id"]])
+            db.commit()
+            sql = """select * from student where stu_ID in (select s_ID from advisor where i_ID = %s)"""
+            cursor.execute(sql, [session["instructor_id"]])
+            data = cursor.fetchall()
+            cursor.close()    
+            return render_template('advisor/assignadvisor.html', data=data)
+
+@app.route('/assignstudenttoadvisor', methods = ["GET", "POST"])
+def assignStudentToAdvisor():
+    if session["permissions"] != "INSTRUCTOR":
+             return
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = """select stu_ID, name from student where stu_ID not in (select s_ID from advisor)"""
+        cursor.execute(sql)
+        students = cursor.fetchall()
+        cursor.close()
+        return render_template('advisor/assignstudenttoadvisor.html', students=students)
+    
+    if request.method == "POST":
+        myStudent = request.form["student"]
+
+        cursor = db.cursor()
+        sql = """
+                insert into advisor(s_ID, i_ID)
+                values (%s, %s)
+              """
+        cursor.execute(sql, [myStudent, session["instructor_id"]])
+        db.commit()
+        cursor.close()
+        return redirect(url_for("assignAdvisor"))
+
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ LOGIN AND REGISTER PAGES ////////////////////////////////
 @app.route('/login',  methods = ['GET','POST'])
 def loginPage():
@@ -1082,6 +1137,7 @@ def registerPage():
         
     return render_template('register.html', options=accOptions, msg=msg)
 
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ PROFILE PAGE ////////////////////////////////////////////
 @app.route('/profile', methods = ['GET','POST'])
 def profilePage():
     cursor = db.cursor()
