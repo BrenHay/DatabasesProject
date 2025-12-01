@@ -1,0 +1,50 @@
+{% extends '/include/layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        Grades
+    </h1>
+</div>
+
+<div style="text-align: center;">
+    {{msg}}
+</div>
+
+<div class="container">
+    <table cellpadding="5" cellspacing="5" class="table table-hover">
+        <tr>
+            <th>Course ID</th>
+            <th>Section ID</th>
+            <th>Semester</th>
+            <th>Year</th>
+            <th>Room ID</th>
+            <th>Time Slot ID</th>
+            <th>Day</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            {% for d in row %}
+            <td>{{d}}</td>
+
+            {% endfor %}
+
+            </td>
+            <td>
+                <form method="POST">
+                    <input type="hidden" name="course" value="{{ row[0] }}">
+                    <input type="hidden" name="section" value="{{ row[1] }}">
+                    <input type="hidden" name="semester" value="{{ row[2] }}">
+                    <input type="hidden" name="year" value="{{ row[3] }}">
+                    <button class="btn btn-outline-success">
+                        Register
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

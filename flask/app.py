@@ -993,6 +993,141 @@ def changeInstructor(i_id, course_id, sec_id, semester, year):
         db.commit()
         cursor.close()
         return redirect(url_for("displayTeaches"))
+    
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ Student View //////////////////////////////////////////
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+@app.route('/viewgrades', methods = ["GET", "POST"])
+def viewGrades():
+     if session["permissions"] != "STUDENT":
+          return
+     print(session["student_id"])
+     if request.method == "GET":
+          cursor = db.cursor()
+          sql = """select course_id, sec_id, semester, year, grade from takes where stu_ID = %s"""
+          cursor.execute(sql, [session["student_id"]])
+          data = cursor.fetchall()
+          cursor.close()
+          return render_template("student-view/viewgrades.html", data=data)
+     
+     if request.method == "POST":
+          myCourse = request.form["course"]
+          mySec = request.form["section"]
+          mySem = request.form["semester"]
+          myYear = request.form["year"]
+          cursor = db.cursor()
+          sql = """
+                    delete from takes
+                    where stu_ID = %s and course_id = %s and sec_id = %s and semester = %s and year = %s
+                """
+          cursor.execute(sql, [session["student_id"], myCourse, mySec, mySem, myYear])
+          db.commit()
+          sql = """select course_id, sec_id, semester, year, grade from takes where stu_ID = %s"""
+          cursor.execute(sql, [session["student_id"]])
+          data = cursor.fetchall()
+          cursor.close()
+          return render_template("student-view/viewgrades.html", data=data)
+     
+@app.route('/coursereg', methods=["GET", "POST"])
+def courseRegister():
+    if session["permissions"] != "STUDENT":
+        return
+
+    # -------------------- GET REQUEST --------------------
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = """
+            SELECT 
+                s.course_id, s.sec_id, s.semester, s.year, 
+                s.roomID, s.time_slot_id, 
+                t.day, t.start_time, t.end_time
+            FROM section s
+            JOIN time_slot t ON s.time_slot_id = t.time_slot_id
+            WHERE s.course_id NOT IN (
+                SELECT course_id
+                FROM takes
+                WHERE stu_ID = %s
+            )
+        """
+        cursor.execute(sql, [session["student_id"]])
+        data = cursor.fetchall()
+        cursor.close()
+        return render_template("student-view/coursereg.html", data=data, msg="")
+
+    # -------------------- POST REQUEST --------------------
+    if request.method == "POST":
+        myCourse = request.form["course"]
+        mySection = request.form["section"]
+        mySemester = request.form["semester"]
+        myYear = request.form["year"]
+
+        msg = ""
+
+        cursor = db.cursor()
+
+        # Check if course has a prereq
+        sql = "SELECT * FROM prereq WHERE course_id = %s"
+        cursor.execute(sql, [myCourse])
+        hasPrereq = cursor.fetchone()
+        
+        if hasPrereq:
+            # Check if student already took the prereq
+            sql = """
+                SELECT *
+                FROM takes
+                WHERE stu_ID = %s AND course_id = %s
+            """
+            cursor.execute(sql, [session["student_id"], hasPrereq[1]])
+            tookPrereq = cursor.fetchone()
+
+            if tookPrereq:
+                # Register for the course
+                sql = """
+                    INSERT INTO takes(stu_ID, course_id, sec_id, semester, year)
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+                print("Has prereq, register")
+                cursor.execute(sql, [session["student_id"], myCourse, mySection, mySemester, myYear])
+                db.commit()
+                
+                msg = "Course Registered!"
+            else:
+                msg = "Couldn't register for class as you don't meet the prereq!"
+
+        else:
+            # No prereq, so register
+            sql = """
+                INSERT INTO takes(stu_ID, course_id, sec_id, semester, year)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql, [session["student_id"], myCourse, mySection, mySemester, myYear])
+            db.commit()
+            
+        sql = """
+            SELECT 
+                s.course_id, s.sec_id, s.semester, s.year, 
+                s.roomID, s.time_slot_id, 
+                t.day, t.start_time, t.end_time
+            FROM section s
+            JOIN time_slot t ON s.time_slot_id = t.time_slot_id
+            WHERE s.course_id NOT IN (
+                SELECT course_id
+                FROM takes
+                WHERE stu_ID = %s
+            )
+        """
+        
+        cursor.execute(sql, [session["student_id"]])
+        data = cursor.fetchall()
+        cursor.close()
+        
+        return render_template("student-view/coursereg.html", data=data, msg="Course Registered!")
+
+
+     
+
+
+
 
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ LOGIN AND REGISTER PAGES ////////////////////////////////
 @app.route('/login',  methods = ['GET','POST'])
