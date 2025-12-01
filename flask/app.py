@@ -1017,6 +1017,7 @@ def loginPage():
                 session["username"] = account[3]
                 session["email"] = account[5]
                 session["permissions"] = account[6]
+                return redirect(url_for('profilePage'))
             else:
                 msg = "Invalid username or password"
         else:
@@ -1080,6 +1081,76 @@ def registerPage():
         msg = "Account created!"
         
     return render_template('register.html', options=accOptions, msg=msg)
+
+@app.route('/profile', methods = ['GET','POST'])
+def profilePage():
+    cursor = db.cursor()
+    if request.method == "GET":
+        if 'logged-in' in session:
+            cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['id']])
+            account = cursor.fetchone()
+            userData = {}
+            if session["permissions"] == "INSTRUCTOR": 
+                cursor.execute('SELECT * FROM instructor WHERE id = %s', [session["instructor_id"]])
+                userData = cursor.fetchone()
+            if session["permissions"] == "STUDENT": 
+                cursor.execute('SELECT * FROM student WHERE stu_ID = %s', [session["student_id"]])
+                userData = cursor.fetchone()
+            return render_template('profile.html', account=account, user_data = userData)
+    if request.method == "POST":
+        action = request.form["action"]
+        if action == "update": 
+            newUsername = request.form["username"]
+            newPassword = request.form["password"]
+            if newPassword == "":
+                sql = """
+                    update accounts
+                    set
+                        username = %s
+                    WHERE id = %s
+                    """
+                cursor.execute(sql, [newUsername, session["id"]])
+            else:
+                sql = """
+                    update accounts
+                    set
+                        username = %s,
+                        password = %s
+                    WHERE id = %s
+                    """
+                cursor.execute(sql, [newUsername, generate_password_hash(newPassword), session["id"]])
+            
+            if session["permissions"] == "INSTRUCTOR": 
+                newName = request.form["name"]
+                sql = """
+                    update instructor
+                    set
+                        name = %s
+                    WHERE id = %s
+                    """
+                cursor.execute(sql, [newName, session["instructor_id"]])
+            if session["permissions"] == "STUDENT":
+                newName = request.form["name"]
+                sql = """
+                    update student
+                    set
+                        name = %s
+                    WHERE stu_ID = %s
+                    """
+                cursor.execute(sql, [newName, session["student_id"]])
+                print(session["student_id"])
+
+            return redirect(url_for('profilePage'))
+        if action == "log_out":
+            session.pop('logged-in', None)
+            session.pop('student_id', None)
+            session.pop('instructor_id', None)
+            session.pop('username', None)
+            session.pop('email', None)
+            session.pop('permissions', None)
+            return redirect(url_for('loginPage'))
+    cursor.close()
+    return redirect(url_for('loginPage'))
 
 if __name__ == '__main__':    
     cursor = db.cursor()
