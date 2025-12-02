@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <h1>
-        Grades
+        Class Register
     </h1>
 </div>
 
@@ -11,33 +11,55 @@
     {{msg}}
 </div>
 
+<form method="POST">
+    <div class="mb-3">
+                <label for="semesters">Choose Semester: </label>
+                <select name="sem" id="sem">
+                    {% for sem in semesters %}
+                    <option value="{{ sem }}">{{ sem }}</option>
+                    {% endfor %}                  
+                </select>
+    </div>
+    <button name="action" value="filter">
+        Filter
+    </button>
+</form>
+
 <div class="container">
     <table cellpadding="5" cellspacing="5" class="table table-hover">
         <tr>
             <th>Course ID</th>
+            <th>Instructor</th>
+            <th>Advisor</th>
             <th>Section ID</th>
             <th>Semester</th>
             <th>Year</th>
             <th>Room ID</th>
             <th>Time Slot ID</th>
-            <th>Day</th>
             <th>Start Time</th>
             <th>End Time</th>
+            <th></th>
         </tr>
         {% for row in data %}
         <tr>
-            {% for d in row %}
-            <td>{{d}}</td>
-
-            {% endfor %}
+            <td>{{row[0]}}</td>
+            <td>{{row[1]}}</td>
+            <td><a href="{{url_for('advisorInfo', name=row[2])}}">{{row[2]}}</a></td>
+            <td>{{row[3]}}</td>
+            <td>{{row[4]}}</td>
+            <td>{{row[5]}}</td>
+            <td>{{row[6]}}</td>
+            <td>{{row[7]}}</td>
+            <td>{{row[8]}}</td>
+            <td>{{row[9]}}</td>
 
             </td>
             <td>
                 <form method="POST">
                     <input type="hidden" name="course" value="{{ row[0] }}">
-                    <input type="hidden" name="section" value="{{ row[1] }}">
-                    <input type="hidden" name="semester" value="{{ row[2] }}">
-                    <input type="hidden" name="year" value="{{ row[3] }}">
+                    <input type="hidden" name="section" value="{{ row[3] }}">
+                    <input type="hidden" name="semester" value="{{ row[4] }}">
+                    <input type="hidden" name="year" value="{{ row[5] }}">
                     <button class="btn btn-outline-success">
                         Register
                     </button>
