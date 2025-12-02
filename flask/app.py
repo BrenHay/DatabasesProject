@@ -22,7 +22,7 @@ def index():
 @app.route('/student', methods = ['GET','POST'])
 def displayStudents():
         if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
         
         if request.method == 'GET':
             #Function with pymysql
@@ -174,7 +174,7 @@ def displayResult(id):
 @app.route('/newstudent',  methods = ['GET','POST'])
 def newStudent():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
         cursor = db.cursor()
         sql = "SELECT dept_name as dept_name from department;"
@@ -214,7 +214,7 @@ def newStudent():
 @app.route("/studentedit/<stu_id>", methods = ["GET", "POST"])
 def editStudent(stu_id):
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = "SELECT dept_name as dept_name from department;"
@@ -258,7 +258,7 @@ def editStudent(stu_id):
 @app.route("/section", methods = ["GET", "POST"])
 def displaySection():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
             #Function with pymysql
             cursor = db.cursor()
@@ -292,7 +292,7 @@ def displaySection():
 @app.route('/newsection',  methods = ['GET','POST'])
 def newSection():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
         cursor = db.cursor()
         sql = "SELECT course_id from course;"
@@ -337,7 +337,7 @@ def editSection(course_id, sec_id, sem, year):
     cursor = db.cursor()
 
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
         cursor = db.cursor()
         sql = "SELECT course_id from course;"
@@ -406,7 +406,7 @@ def editSection(course_id, sec_id, sem, year):
 @app.route("/classroom", methods = ["GET", "POST"])
 def displayClassrooms():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
             #Function with pymysql
             cursor = db.cursor()
@@ -440,7 +440,7 @@ def displayClassrooms():
 @app.route('/newclassroom', methods = ["GET", "POST"])
 def newClassroom():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from buildings"""
@@ -478,7 +478,7 @@ def newClassroom():
 @app.route('/editclassroom/<room_id>', methods = ["GET", "POST"])
 def editClassroom(room_id):
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from classroom where roomID = %s"""
@@ -517,7 +517,7 @@ def editClassroom(room_id):
 @app.route("/course", methods = ["GET", "POST"])
 def displayCourses():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
             #Function with pymysql
             cursor = db.cursor()
@@ -549,7 +549,7 @@ def displayCourses():
 @app.route('/newcourse', methods = ["GET", "POST"])
 def newCourse():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from department"""
@@ -579,7 +579,7 @@ def newCourse():
 @app.route('/editcourse/<course_id>', methods = ["GET", "POST"])
 def editCourse(course_id):
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from course WHERE course_id = %s"""
@@ -615,7 +615,7 @@ def editCourse(course_id):
 @app.route("/department", methods = ["GET", "POST"])
 def displayDepartments():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
             #Function with pymysql
             cursor = db.cursor()
@@ -647,7 +647,7 @@ def displayDepartments():
 @app.route('/newdepartment', methods = ["GET", "POST"])
 def newDepartment():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from buildings"""
@@ -676,7 +676,7 @@ def newDepartment():
 @app.route('/editdepartment/<dept_name>', methods = ["GET", "POST"])
 def editDepartment(dept_name):
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from department WHERE dept_name = %s"""
@@ -715,7 +715,7 @@ def editDepartment(dept_name):
 @app.route("/instructor", methods = ["GET", "POST"])
 def displayInstructors():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
             #Function with pymysql
             cursor = db.cursor()
@@ -747,7 +747,7 @@ def displayInstructors():
 @app.route('/newinstructor', methods = ["GET", "POST"])
 def newInstructor():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from department"""
@@ -777,7 +777,7 @@ def newInstructor():
 @app.route('/editinstructor/<i_ID>', methods = ["GET", "POST"])
 def editInstructor(i_ID):
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from instructor WHERE ID = %s"""
@@ -815,7 +815,7 @@ def editInstructor(i_ID):
 @app.route("/timeslot", methods = ["GET", "POST"])
 def displayTimeslots():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
             #Function with pymysql
             cursor = db.cursor()
@@ -847,7 +847,7 @@ def displayTimeslots():
 @app.route('/newtimeslot', methods = ["GET", "POST"])
 def newTimeslot():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         return render_template('timeslot/newtimeslot.html')
     
@@ -869,7 +869,7 @@ def newTimeslot():
 @app.route('/edittimeslot/<t_id>/<i_day>', methods = ["GET", "POST"])
 def editTimeslot(t_id, i_day):
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from time_slot WHERE time_slot_id = %s and day = %s"""
@@ -900,7 +900,7 @@ def editTimeslot(t_id, i_day):
 @app.route("/teachertoclass", methods = ["GET", "POST"])
 def displayTeaches():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
             #Function with pymysql
             cursor = db.cursor()
@@ -936,7 +936,7 @@ def displayTeaches():
 @app.route('/assign', methods = ["GET", "POST"])
 def assignInstructor():
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from instructor"""
@@ -968,7 +968,7 @@ def assignInstructor():
 @app.route('/changeinstructor/<i_id>/<course_id>/<sec_id>/<semester>/<year>', methods = ["GET", "POST"])
 def changeInstructor(i_id, course_id, sec_id, semester, year):
     if session["permissions"] != "ADMIN":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from instructor"""
@@ -998,7 +998,7 @@ def changeInstructor(i_id, course_id, sec_id, semester, year):
 @app.route('/assignadvisor', methods = ["GET", "POST"])
 def assignAdvisor():
     if session["permissions"] != "INSTRUCTOR":
-        return
+        return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from student where stu_ID in (select s_ID from advisor where i_ID = %s)"""
@@ -1027,7 +1027,7 @@ def assignAdvisor():
 @app.route('/assignstudenttoadvisor', methods = ["GET", "POST"])
 def assignStudentToAdvisor():
     if session["permissions"] != "INSTRUCTOR":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select stu_ID, name from student where stu_ID not in (select s_ID from advisor)"""
@@ -1053,7 +1053,7 @@ def assignStudentToAdvisor():
 @app.route('/grades',  methods = ['GET','POST'])
 def gradePage():
     if session["permissions"] != "INSTRUCTOR":
-        return
+        return redirect(url_for('loginPage'))
     if request.method == 'GET':
         #Function with pymysql
         cursor = db.cursor()
@@ -1075,7 +1075,7 @@ def gradePage():
 @app.route('/updategrade/<stu_ID>/<course_id>/<sec_id>/<semester>/<year>/<grade>', methods = ["GET", "POST"])
 def editGrade(stu_ID, course_id, sec_id, semester, year, grade):
     if session["permissions"] != "INSTRUCTOR":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """ 
@@ -1104,7 +1104,7 @@ def editGrade(stu_ID, course_id, sec_id, semester, year, grade):
 @app.route("/prereq", methods = ["GET", "POST"])
 def prereqPage():
     if session["permissions"] != "INSTRUCTOR":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == 'GET':
             #Function with pymysql
             cursor = db.cursor()
@@ -1136,7 +1136,7 @@ def prereqPage():
 @app.route('/editprereq/<course_id>/<prereq_id>', methods = ["GET", "POST"])
 def editPrereq(course_id, prereq_id):
     if session["permissions"] != "INSTRUCTOR":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select * from prereq WHERE course_id = %s AND prereq_id = %s"""
@@ -1154,21 +1154,34 @@ def editPrereq(course_id, prereq_id):
         newCourseID = request.form["course_id"]
         newPrereqID = request.form["prereq_id"]
         cursor = db.cursor()
-        print([newCourseID, newPrereqID, course_id, prereq_id])
-        sql = """
+        sql = """select * from prereq where course_id = %s AND prereq_id = %s"""
+        cursor.execute(sql, [newCourseID, newPrereqID])
+        data = cursor.fetchall()
+        if data == ():
+            print([newCourseID, newPrereqID, course_id, prereq_id])
+            sql = """
                 update prereq
-                set prereq_id = %s
+                set course_id = %s, prereq_id = %s
                 WHERE course_id = %s AND prereq_id = %s
-              """
-        cursor.execute(sql, [newPrereqID, course_id, prereq_id])
-        db.commit()
-        cursor.close()
-        return redirect(url_for("prereqPage"))
+            """
+            cursor.execute(sql, [newCourseID, newPrereqID, course_id, prereq_id])
+            db.commit()
+            cursor.close()
+            return redirect(url_for("prereqPage"))
+        else: 
+            sql = """select course_id from course"""
+            cursor.execute(sql)
+            data = cursor.fetchall()
+            cursor.close()
+            edited = []
+            for i in data:
+                edited.append(i[0])
+            return render_template('prereq/editprereq.html', courseID=course_id, prereqID=prereq_id, data=edited, msg="Prerequisite already exists!")
 
 @app.route('/newPrereq', methods = ["GET", "POST"])
 def newPrereq():
     if session["permissions"] != "INSTRUCTOR":
-             return
+             return redirect(url_for('loginPage'))
     if request.method == "GET":
         cursor = db.cursor()
         sql = """select course_id from course"""
@@ -1184,14 +1197,27 @@ def newPrereq():
         myCourse = request.form["course_id"]
         myPrereq = request.form["prereq_id"]
         cursor = db.cursor()
-        sql = """
+        sql = """select * from prereq where course_id = %s AND prereq_id = %s"""
+        cursor.execute(sql, [newCourseID, newPrereqID])
+        data = cursor.fetchall()
+        if data == ():
+            sql = """
                 insert into prereq(course_id, prereq_id)
                 values (%s, %s)
-              """
-        cursor.execute(sql, [myCourse, myPrereq])
-        db.commit()
-        cursor.close()
-        return redirect(url_for("prereqPage"))
+            """
+            cursor.execute(sql, [myCourse, myPrereq])
+            db.commit()
+            cursor.close()
+            return redirect(url_for("prereqPage"))
+        else:
+            sql = """select course_id from course"""
+            cursor.execute(sql)
+            data = cursor.fetchall()
+            cursor.close()
+            edited = []
+            for i in data:
+                edited.append(i[0])
+            return render_template('prereq/newprereq.html', data=edited, msg="Prerequisite already exists!")
 
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ LOGIN AND REGISTER PAGES ////////////////////////////////
 @app.route('/login',  methods = ['GET','POST'])
