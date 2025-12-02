@@ -993,6 +993,376 @@ def changeInstructor(i_id, course_id, sec_id, semester, year):
         db.commit()
         cursor.close()
         return redirect(url_for("displayTeaches"))
+    
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ Student View //////////////////////////////////////////
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+@app.route('/viewgrades', methods = ["GET", "POST"])
+def viewGrades():
+     if session["permissions"] != "STUDENT":
+          return
+     print(session["student_id"])
+     if request.method == "GET":
+          cursor = db.cursor()
+          sql = """select course_id, sec_id, semester, year, grade from takes where stu_ID = %s"""
+          cursor.execute(sql, [session["student_id"]])
+          data = cursor.fetchall()
+          cursor.close()
+          return render_template("student-view/viewgrades.html", data=data)
+     
+     if request.method == "POST":
+          myCourse = request.form["course"]
+          mySec = request.form["section"]
+          mySem = request.form["semester"]
+          myYear = request.form["year"]
+          cursor = db.cursor()
+          sql = """
+                    delete from takes
+                    where stu_ID = %s and course_id = %s and sec_id = %s and semester = %s and year = %s
+                """
+          cursor.execute(sql, [session["student_id"], myCourse, mySec, mySem, myYear])
+          db.commit()
+          sql = """select course_id, sec_id, semester, year, grade from takes where stu_ID = %s"""
+          cursor.execute(sql, [session["student_id"]])
+          data = cursor.fetchall()
+          cursor.close()
+          return render_template("student-view/viewgrades.html", data=data)
+     
+@app.route('/coursereg', methods=["GET", "POST"])
+def courseRegister():
+    if session["permissions"] != "STUDENT":
+        return
+    semesters = ["Summer", "Fall", "Spring"]
+
+    # -------------------- GET REQUEST --------------------
+    if request.method == "GET":
+        cursor = db.cursor()
+        sql = """
+            SELECT DISTINCT
+                s.course_id, i.name, stu.name, s.sec_id, s.semester, s.year, 
+                s.roomID, s.time_slot_id, 
+                t.start_time, t.end_time
+            FROM section s
+            JOIN time_slot t ON s.time_slot_id = t.time_slot_id
+            JOIN teaches ts ON s.course_id = ts.course_id and s.sec_id = ts.sec_id
+            JOIN instructor i ON ts.ID = i.ID
+            JOIN advisor a on ts.ID = a.i_ID
+            JOIN student stu on a.s_ID = stu.stu_ID
+            WHERE s.course_id NOT IN (
+                SELECT course_id
+                FROM takes
+                WHERE takes.stu_ID = %s
+            )
+        """
+        cursor.execute(sql, [session["student_id"]])
+        data = cursor.fetchall()
+        cursor.close()
+        return render_template("student-view/coursereg.html", semesters=semesters, data=data, msg="")
+
+    # -------------------- POST REQUEST --------------------
+    if request.method == "POST":
+        myAction = request.form["action"]
+        mySemester = request.form["sem"]
+        if myAction == "filter" and mySemester != "None":
+             cursor = db.cursor()
+             sql = """
+                SELECT DISTINCT
+                s.course_id, i.name, stu.name, s.sec_id, s.semester, s.year, 
+                s.roomID, s.time_slot_id, 
+                t.start_time, t.end_time
+                FROM section s
+                JOIN time_slot t ON s.time_slot_id = t.time_slot_id
+                JOIN teaches ts ON s.course_id = ts.course_id and s.sec_id = ts.sec_id
+                JOIN instructor i ON ts.ID = i.ID
+                JOIN advisor a on ts.ID = a.i_ID
+                JOIN student stu on a.s_ID = stu.stu_ID
+                WHERE s.course_id NOT IN (
+                SELECT course_id
+                FROM takes
+                WHERE takes.stu_ID = %s
+                ) and s.semester = %s
+                """
+             cursor.execute(sql, [session["student_id"], mySemester])
+             data = cursor.fetchall()
+             cursor.close()
+             return render_template("student-view/coursereg.html", semesters=semesters, data=data, msg="")
+        
+        myCourse = request.form["course"]
+        mySection = request.form["section"]
+        mySemester = request.form["semester"]
+        myYear = request.form["year"]
+
+        msg = ""
+
+        cursor = db.cursor()
+
+        # Check if course has a prereq
+        sql = "SELECT * FROM prereq WHERE course_id = %s"
+        cursor.execute(sql, [myCourse])
+        hasPrereq = cursor.fetchone()
+        
+        if hasPrereq:
+            # Check if student already took the prereq
+            sql = """
+                SELECT *
+                FROM takes
+                WHERE stu_ID = %s AND course_id = %s
+            """
+            cursor.execute(sql, [session["student_id"], hasPrereq[1]])
+            tookPrereq = cursor.fetchone()
+
+            if tookPrereq:
+                # Register for the course
+                sql = """
+                    INSERT INTO takes(stu_ID, course_id, sec_id, semester, year)
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+                print("Has prereq, register")
+                cursor.execute(sql, [session["student_id"], myCourse, mySection, mySemester, myYear])
+                db.commit()
+                
+                msg = "Course Registered!"
+            else:
+                msg = "Couldn't register for class as you don't meet the prereq!"
+
+        else:
+            # No prereq, so register
+            sql = """
+                INSERT INTO takes(stu_ID, course_id, sec_id, semester, year)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql, [session["student_id"], myCourse, mySection, mySemester, myYear])
+            db.commit()
+            
+        sql = """
+            SELECT DISTINCT
+                s.course_id, i.name, stu.name, s.sec_id, s.semester, s.year, 
+                s.roomID, s.time_slot_id, 
+                t.start_time, t.end_time
+            FROM section s
+            JOIN time_slot t ON s.time_slot_id = t.time_slot_id
+            JOIN teaches ts ON s.course_id = ts.course_id and s.sec_id = ts.sec_id
+            JOIN instructor i ON ts.ID = i.ID
+            JOIN advisor a on ts.ID = a.i_ID
+            JOIN student stu on a.s_ID = stu.stu_ID
+            WHERE s.course_id NOT IN (
+                SELECT course_id
+                FROM takes
+                WHERE takes.stu_ID = %s
+            )
+        """
+        
+        cursor.execute(sql, [session["student_id"]])
+        data = cursor.fetchall()
+        cursor.close()
+        
+        return render_template("student-view/coursereg.html", data=data, semesters=semesters, msg=msg)
+    
+@app.route('/advisorinfo/<name>', methods = ["GET", "POST"])
+def advisorInfo(name):
+     if request.form == "GET":
+          cursor = db.cursor()
+          sql = """SELECT * from student where name = %s"""
+          cursor.execute(sql, [name])
+          data = cursor.fetchone()
+          cursor.close()
+          return render_template("student-view/advisorinfo.html", data=data, stuName=name)
+     cursor = db.cursor()
+     sql = """SELECT * from student where name = %s"""
+     cursor.execute(sql, [name])
+     data = cursor.fetchone()
+     cursor.close()
+     return render_template("student-view/advisorinfo.html", data=data, stuName=name)
+
+
+     
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ EXTRA QUERIES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+@app.route('/deptavg', methods = ['GET', 'POST'])
+def deptAverage():
+     if request.method == "GET":
+          cursor = db.cursor()
+          sql = """
+                SELECT 
+                d.dept_name,
+                AVG(
+                CASE t.grade
+                    WHEN 'A'  THEN 4.0
+                    WHEN 'A-' THEN 3.7
+                    WHEN 'B+' THEN 3.3
+                    WHEN 'B'  THEN 3.0
+                    WHEN 'B-' THEN 2.7
+                    WHEN 'C+' THEN 2.3
+                    WHEN 'C'  THEN 2.0
+                    WHEN 'C-' THEN 1.7
+                    WHEN 'D+' THEN 1.3
+                    WHEN 'D'  THEN 1.0
+                    WHEN 'F'  THEN 0.0
+                END
+                ) AS avg_gpa
+                FROM department d
+                JOIN student s 
+                ON s.dept_name = d.dept_name
+                JOIN takes t
+                ON t.stu_id = s.stu_id
+                WHERE t.grade IS NOT NULL
+                GROUP BY d.dept_name;
+                """
+          cursor.execute(sql)
+          data = cursor.fetchall()
+          cursor.close()
+          return render_template("extraqueries/deptavg.html", data=data, highest=["", ""], lowest=["", ""])
+     
+@app.route('/totaldept', methods = ["GET", "POST"])
+def deptartmentTotal():
+     if request.method == "GET":
+        cursor = db.cursor()
+        sql = """select dept_name, COUNT(*) as stu_count from student group by dept_name"""
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        cursor.close()
+        return render_template("extraqueries/totaldept.html", data=data)
+     if request.method == "POST":
+          cursor = db.cursor()
+          action = request.form["action"]
+          sql = ""
+          if action == "enrolled":
+               sql = """
+                    select dept_name, COUNT(*) as stu_count from student 
+                    where EXISTS(
+    	            select stu_ID from takes
+    	            where takes.stu_ID = student.stu_ID
+                    )
+                    group by dept_name
+                    """
+          elif action == "unenrolled":
+               sql = """select dept_name, COUNT(*) as stu_count from student group by dept_name"""
+          cursor.execute(sql)
+          data = cursor.fetchall()
+          cursor.close()
+          return render_template("extraqueries/totaldept.html", data=data)
+     
+@app.route('/gradecompare', methods = ["GET", "POST"])
+def compareGrades():
+    semesters = ["Spring", "Summer", "Fall"]
+    if request.method == "GET":
+         return render_template("extraqueries/gradecompare.html", semesters=semesters)
+    if request.method == "POST":
+         mySem = request.form["sem"]
+         cursor = db.cursor()
+         sql = """
+                SELECT course_id, avg_gpa
+                FROM (
+                SELECT
+                course_id,
+                AVG(
+                    CASE grade
+                        WHEN 'A'  THEN 4.0
+                        WHEN 'A-' THEN 3.7
+                        WHEN 'B+' THEN 3.3
+                        WHEN 'B'  THEN 3.0
+                        WHEN 'B-' THEN 2.7
+                        WHEN 'C+' THEN 2.3
+                        WHEN 'C'  THEN 2.0
+                        WHEN 'C-' THEN 1.7
+                        WHEN 'D+' THEN 1.3
+                        WHEN 'D'  THEN 1.0
+                        WHEN 'F'  THEN 0.0
+                    END
+                ) AS avg_gpa
+                FROM takes
+                where semester = %s and grade is not null
+                GROUP BY course_id
+                ) AS gpa_by_course
+                ORDER BY avg_gpa DESC
+                LIMIT 1;"""
+         cursor.execute(sql, [mySem])
+         highest = cursor.fetchone()
+         sql = """
+                SELECT course_id, avg_gpa
+                FROM (
+                SELECT
+                course_id,
+                AVG(
+                    CASE grade
+                        WHEN 'A'  THEN 4.0
+                        WHEN 'A-' THEN 3.7
+                        WHEN 'B+' THEN 3.3
+                        WHEN 'B'  THEN 3.0
+                        WHEN 'B-' THEN 2.7
+                        WHEN 'C+' THEN 2.3
+                        WHEN 'C'  THEN 2.0
+                        WHEN 'C-' THEN 1.7
+                        WHEN 'D+' THEN 1.3
+                        WHEN 'D'  THEN 1.0
+                        WHEN 'F'  THEN 0.0
+                    END
+                ) AS avg_gpa
+                FROM takes
+                where semester = %s
+                GROUP BY course_id
+                ) AS gpa_by_course
+                ORDER BY avg_gpa ASC
+                LIMIT 1;"""
+         cursor.execute(sql, [mySem])
+         lowest = cursor.fetchone()
+         return render_template("extraqueries/gradecompare.html", semesters=semesters, highest=highest, lowest=lowest)
+    
+@app.route("/gradesbysem", methods = ["GET", "POST"])
+def getAvgBySem():
+     semesters = ["Spring", "Summer", "Fall"]
+     if request.method == "GET":
+          return render_template("extraqueries/gradesbysem.html", semesters=semesters)
+     if request.method == "POST":
+          myStart = request.form["sem1"]
+          myEnd = request.form["sem2"]
+          cursor = db.cursor()
+          sql = """
+                SELECT
+                course_id,
+                AVG(
+                CASE grade
+                WHEN 'A'  THEN 4.0
+                WHEN 'A-' THEN 3.7
+                WHEN 'B+' THEN 3.3
+                WHEN 'B'  THEN 3.0
+                WHEN 'B-' THEN 2.7
+                WHEN 'C+' THEN 2.3
+                WHEN 'C'  THEN 2.0
+                WHEN 'C-' THEN 1.7
+                WHEN 'D+' THEN 1.3
+                WHEN 'D'  THEN 1.0
+                WHEN 'F'  THEN 0.0
+                END
+                ) AS avg_gpa
+                FROM takes
+                WHERE 
+                CASE semester
+                WHEN 'Spring' THEN 1
+                WHEN 'Summer' THEN 2
+                WHEN 'Fall'   THEN 3
+                END
+                BETWEEN
+                CASE %s
+                WHEN 'Spring' THEN 1
+                WHEN 'Summer' THEN 2
+                    WHEN 'Fall'   THEN 3
+                END
+                AND
+                CASE %s
+                WHEN 'Spring' THEN 1
+                WHEN 'Summer' THEN 2
+                WHEN 'Fall'   THEN 3
+                END
+                GROUP BY course_id;
+                """
+          cursor.execute(sql, [myStart, myEnd])
+          data = cursor.fetchall()
+          return render_template("extraqueries/gradesbysem.html", semesters=semesters, data=data)
+
+
+
+
 
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ ADVISOR STUFF /////////////////////////////////////
 @app.route('/assignadvisor', methods = ["GET", "POST"])
@@ -1444,6 +1814,7 @@ def profilePage():
                     WHERE id = %s
                     """
                 cursor.execute(sql, [newName, session["instructor_id"]])
+                db.commit()
             if session["permissions"] == "STUDENT":
                 newName = request.form["name"]
                 sql = """

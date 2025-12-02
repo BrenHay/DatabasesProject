@@ -1,0 +1,42 @@
+{% extends '/include/layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        Highest and Lowest GPA per Semester
+    </h1>
+</div>
+
+
+
+<form method="POST">
+    <div class="mb-3">
+            <label for="semesters">Choose a Semester:</label>
+            <select name="sem" id="sem">
+                {% for sem in semesters %}
+                <option value="{{ sem }}">{{ sem }}</option>
+                {% endfor %}
+            </select>
+    </div>
+    
+    <button type="submit">
+        Compare!
+    </button>
+</form>
+
+<div style="text-align: center;">
+    {% if highest %}
+    <h3>Highest GPA</h3>
+    <p>{{highest[0]}}</p>
+    <p>GPA: {{highest[1]}}</p>
+    {% endif %}
+</div>
+
+<div style="text-align: center;">
+    {% if lowest %}
+    <h3>Lowest GPA</h3>
+    <p>{{lowest[0]}}</p>
+    <p>GPA: {{lowest[1]}}</p>
+    {% endif %}
+</div>
+{% endblock %}
