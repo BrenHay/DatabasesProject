@@ -1480,6 +1480,7 @@ def profilePage():
                     WHERE id = %s
                     """
                 cursor.execute(sql, [newUsername, session["id"]])
+                db.commit()
             else:
                 sql = """
                     update accounts
@@ -1489,6 +1490,7 @@ def profilePage():
                     WHERE id = %s
                     """
                 cursor.execute(sql, [newUsername, generate_password_hash(newPassword), session["id"]])
+                db.commit()
             
             if session["permissions"] == "INSTRUCTOR": 
                 newName = request.form["name"]
@@ -1499,6 +1501,7 @@ def profilePage():
                     WHERE id = %s
                     """
                 cursor.execute(sql, [newName, session["instructor_id"]])
+                db.commit()
             if session["permissions"] == "STUDENT":
                 newName = request.form["name"]
                 sql = """
@@ -1508,6 +1511,7 @@ def profilePage():
                     WHERE stu_ID = %s
                     """
                 cursor.execute(sql, [newName, session["student_id"]])
+                db.commit()
                 print(session["student_id"])
 
             return redirect(url_for('profilePage'))
