@@ -1,12 +1,12 @@
 {% extends 'include/layout.html' %}
 {% block content %}
 <div class="container">
-    <form action="{{ url_for('editGrade', stu_ID=takes[0] course_id=takes[1], sec_id=takes[2], semester=takes[3], year=takes[4], grade=takes[5]) }}" method="POST">
+    <form action="{{ url_for('editGrade', stu_ID=takes[0], course_id=takes[1], sec_id=takes[2], semester=takes[3], year=takes[4], grade=takes[5]) }}" method="POST">
         <p><h2>Edit Grade:</h2> 
 
         <div class="mb-3">
             <label for="depts">Choose a Grade:</label>
-            <select name="dept" id="dept">
+            <select name="grade" id="grade">
                 <option value="A" {% if takes[5]=="A" %}selected{% endif %}>
                     A
                 </option>

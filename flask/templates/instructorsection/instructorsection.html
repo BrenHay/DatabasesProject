@@ -1,0 +1,50 @@
+{% extends '/include/layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        Sections Taught
+    </h1>
+</div>
+
+<div class="container">
+    <table cellpadding="5" cellspacing="5" class="table table-hover">
+        <tr>
+            <th>Course</th>
+            <th>Section ID</th>
+            <th>Semester</th>
+            <th>Year</th>
+            <th>Room</th>
+            <th>Time Slot</th>
+            <th></th>
+            <th></th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            {% for d in row %}
+            <td>{{d}}</td>
+
+            {% endfor %}
+            <td></td>
+            </td>
+            <td>
+                <form method="POST">
+                    <input type="hidden" name="course_id" value="{{ row[0] }}">
+                    <input type="hidden" name="sec_id" value="{{ row[1] }}">
+                    <input type="hidden" name="semester" value="{{ row[2] }}">
+                    <input type="hidden" name="year" value="{{ row[3] }}">
+                    <button type="submit" name="action" value="inspect" class="btn btn-outline-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-pencil" viewBox="0 0 16 16">
+                            <path
+                                d="M12.146.854a.5.5 0 0 1 .708 0l2.292 2.292a.5.5 0 0 1 0 .708l-9.439 9.439-3.182.795a.25.25 0 0 1-.303-.303l.795-3.182 9.439-9.439z" />
+                            <path d="M11.207 2.5 13.5 4.793 12.793 5.5 10.5 3.207 11.207 2.5z" />
+                        </svg>
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

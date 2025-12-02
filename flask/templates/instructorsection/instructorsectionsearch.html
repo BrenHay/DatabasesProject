@@ -1,0 +1,27 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+
+	<div class ="container">
+		<form action="/instructorsectionsearch" method = "POST">
+			<p><h2>Section Search:</h2></p>
+            <label for="semester">Choose a Semester:</label>
+            <select name="semester" id="semester">
+                {% for semester in semesters %}
+                <option value="{{ semester[0] }}">
+                    {{ semester[0] }}
+                </option>
+                {% endfor %}
+            </select>
+            <label for="year">Choose a Year:</label>
+            <select name="year" id="year">
+                {% for year in years %}
+                <option value="{{ year[0] }}">
+                    {{ year[0] }}
+                </option>
+                {% endfor %}
+            </select>
+			<input type = "submit" name="action" value = "Submit" />
+		</form>
+	</div>
+
+{% endblock %}

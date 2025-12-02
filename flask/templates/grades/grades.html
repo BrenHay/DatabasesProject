@@ -57,7 +57,10 @@
                             </path>
                         </svg>
                     </button>
-                    <a href="{{ url_for('editGrade', stu_ID=row[1], course_id=row[2], sec_id=row[3], semester=row[4], year=row[5], grade=row[6]) }}">
+                </form>
+            </td>
+            <td>
+                <a href="{{ url_for('editGrade', stu_ID=row[1], course_id=row[2], sec_id=row[3], semester=row[4], year=row[5], grade=row[6]) }}">
                         <button class="btn btn-outline-success">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                 class="bi bi-pencil" viewBox="0 0 16 16">
@@ -67,7 +70,6 @@
                             </svg>
                         </button>
                     </a>
-                </form>
             </td>
         </tr>
         {% endfor %}
