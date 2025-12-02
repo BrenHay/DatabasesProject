@@ -1,0 +1,32 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="{{ url_for('editPrereq', course_id=courseID, prereq_id=prereqID) }}" method="POST">
+        <p><h2>Edit Prerequisite:</h2> 
+
+        <div class="mb-3">
+            <label for="depts">Choose a Course:</label>
+            <select name="course_id" id="course_id">
+                {% for course in data %}
+                <option value="{{ course }}" {% if course==courseID %}selected{% endif %}>
+                    {{ course }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="depts">Choose a Course:</label>
+            <select name="prereq_id" id="prereq_id">
+                {% for course in data %}
+                <option value="{{ course }}" {% if course==prereqID %}selected{% endif %}>
+                    {{ course }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <p>{{ msg }}</p>
+
+        <button type="submit" class="btn btn-primary">Update Course</button>
+    </form>
+</div>
+{% endblock %}

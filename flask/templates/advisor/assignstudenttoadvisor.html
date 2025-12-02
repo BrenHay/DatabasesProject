@@ -1,0 +1,20 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="/assignstudenttoadvisor" method="POST">
+        <p>
+        <h2>Assign Student:</h2>
+
+        <div class="mb-3">
+            <label for="students">Choose a Student:</label>
+            <select name="student" id="student">
+                {% for student in students %}
+                <option value="{{ student[0] }}">{{ student[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Assign</button>
+    </form>
+</div>
+{% endblock %}

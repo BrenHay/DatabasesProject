@@ -1,0 +1,52 @@
+{% extends 'include/layout.html' %}
+{% block content %}
+<div class="container">
+    <form action="{{ url_for('editGrade', stu_ID=takes[0], course_id=takes[1], sec_id=takes[2], semester=takes[3], year=takes[4], grade=takes[5]) }}" method="POST">
+        <p><h2>Edit Grade:</h2> 
+
+        <div class="mb-3">
+            <label for="depts">Choose a Grade:</label>
+            <select name="grade" id="grade">
+                <option value="A" {% if takes[5]=="A" %}selected{% endif %}>
+                    A
+                </option>
+                <option value="A-" {% if takes[5]=="A-" %}selected{% endif %}>
+                    A-
+                </option>
+                <option value="B+" {% if takes[5]=="B+" %}selected{% endif %}>
+                    B+
+                </option>
+                <option value="B" {% if takes[5]=="B" %}selected{% endif %}>
+                    B
+                </option>
+                <option value="B-" {% if takes[5]=="B-" %}selected{% endif %}>
+                    B-
+                </option>
+                <option value="B+" {% if takes[5]=="C+" %}selected{% endif %}>
+                    C+
+                </option>
+                <option value="B" {% if takes[5]=="C" %}selected{% endif %}>
+                    C
+                </option>
+                <option value="B-" {% if takes[5]=="C-" %}selected{% endif %}>
+                    C-
+                </option>
+                <option value="D+" {% if takes[5]=="D+" %}selected{% endif %}>
+                    D+
+                </option>
+                <option value="D" {% if takes[5]=="D" %}selected{% endif %}>
+                    D
+                </option>
+                <option value="D-" {% if takes[5]=="D-" %}selected{% endif %}>
+                    D-
+                </option>
+                <option value="F" {% if takes[5]=="F" %}selected{% endif %}>
+                    F
+                </option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Grade</button>
+    </form>
+</div>
+{% endblock %}

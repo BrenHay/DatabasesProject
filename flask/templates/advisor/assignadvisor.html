@@ -1,55 +1,49 @@
-{% extends 'include/layout.html' %}
+{% extends '/include/layout.html' %}
+
 {% block content %}
 <div class="container">
-    <form action="/assign" method="POST">
-        <p>
-        <h2>Assign Instructor:</h2>
+    <h1>
+        Advisor
+    </h1>
+</div>
 
-        <div class="mb-3">
-            <label for="teachers">Choose an Instructor:</label>
-            <select name="teach" id="teach">
-                {% for teach in instructors %}
-                <option value="{{ teach[0] }}">{{ teach[1] }}</option>
-                {% endfor %}
-            </select>
-        </div>
+<div class="container">
+    <table cellpadding="5" cellspacing="5" class="table table-hover">
+        <tr>
+            <th>Student ID</th>
+            <th>Name</th>
+            <th>Department Name</th>
+            <th>Total Credits</th>
+            <th></th>
+            <th>
+                <div>
+                    <a href="{{url_for('assignStudentToAdvisor')}}">
+                        <button class="btn btn-outline-success">Assign Student</button>
+                    </a>
+                </div>
+            </th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            {% for d in row %}
+            <td>{{d}}</td>
 
-        <div class="mb-3">
-            <label for="sections">Choose a Section:</label>
-
-            <select name="selected_index" id="section_select" class="form-select" required>
-                <option value="">-- Select a section --</option>
-                {% for section in sections %}
-                <option value="{{ loop.index0 }}" data-course="{{ section[0] }}" data-sec="{{ section[1] }}"
-                    data-sem="{{ section[2] }}" data-year="{{ section[3] }}">
-                    Course: {{ section[0] }},
-                    Section ID: {{section[1]}},
-                    Semester: {{section[2]}},
-                    Year: {{section[3]}}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Hidden fields that will be filled when selecting -->
-        <input type="hidden" name="course_id" id="course_id">
-        <input type="hidden" name="sec_id" id="sec_id">
-        <input type="hidden" name="semester" id="semester">
-        <input type="hidden" name="year" id="year">
-
-        <script>
-            document.getElementById("section_select").addEventListener("change", function () {
-                const opt = this.options[this.selectedIndex];
-
-                document.getElementById("course_id").value = opt.dataset.course;
-                document.getElementById("sec_id").value = opt.dataset.sec;
-                document.getElementById("semester").value = opt.dataset.sem;
-                document.getElementById("year").value = opt.dataset.year;
-            });
-        </script>
-
-
-        <button type="submit" class="btn btn-primary">Assign</button>
-    </form>
+            {% endfor %}
+            <td></td>
+            </td>
+            <td>
+                <form method="POST">
+                    <input type="hidden" name="ID" value="{{ row[0] }}">
+                    <input type="hidden" name="name" value="{{ row[1] }}">
+                    <input type="hidden" name="dept_name" value="{{ row[2] }}">
+                    <input type="hidden" name="tot_cred" value="{{ row[3] }}">
+                    <button type="submit" name="action" value="delete" class="btn btn-outline-danger">
+                            Unassign
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
 </div>
 {% endblock %}

@@ -44,6 +44,20 @@
           <a class="nav-link" href="/teachertoclass">Assign Instructor</a>
         </li>
         {% endif %}
+        {% if session["permissions"] == "INSTRUCTOR" %}
+        <li class="nav-item">
+          <a class="nav-link" href="/assignadvisor">Assign Advisor</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/grades">Assign Grades</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/prereq">Modify Prerequisites</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/instructorsectionsearch">Search Sections</a>
+        </li>
+        {% endif %}
 
         {% if session["permissions"] == "STUDENT" %}
         <li class="nav-item">
