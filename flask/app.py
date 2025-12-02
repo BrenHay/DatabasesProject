@@ -1032,30 +1032,61 @@ def viewGrades():
 def courseRegister():
     if session["permissions"] != "STUDENT":
         return
+    semesters = ["Summer", "Fall", "Spring"]
 
     # -------------------- GET REQUEST --------------------
     if request.method == "GET":
         cursor = db.cursor()
         sql = """
-            SELECT 
-                s.course_id, s.sec_id, s.semester, s.year, 
+            SELECT DISTINCT
+                s.course_id, i.name, stu.name, s.sec_id, s.semester, s.year, 
                 s.roomID, s.time_slot_id, 
-                t.day, t.start_time, t.end_time
+                t.start_time, t.end_time
             FROM section s
             JOIN time_slot t ON s.time_slot_id = t.time_slot_id
+            JOIN teaches ts ON s.course_id = ts.course_id and s.sec_id = ts.sec_id
+            JOIN instructor i ON ts.ID = i.ID
+            JOIN advisor a on ts.ID = a.i_ID
+            JOIN student stu on a.s_ID = stu.stu_ID
             WHERE s.course_id NOT IN (
                 SELECT course_id
                 FROM takes
-                WHERE stu_ID = %s
+                WHERE takes.stu_ID = %s
             )
         """
         cursor.execute(sql, [session["student_id"]])
         data = cursor.fetchall()
         cursor.close()
-        return render_template("student-view/coursereg.html", data=data, msg="")
+        return render_template("student-view/coursereg.html", semesters=semesters, data=data, msg="")
 
     # -------------------- POST REQUEST --------------------
     if request.method == "POST":
+        myAction = request.form["action"]
+        mySemester = request.form["sem"]
+        if myAction == "filter" and mySemester != "None":
+             cursor = db.cursor()
+             sql = """
+                SELECT DISTINCT
+                s.course_id, i.name, stu.name, s.sec_id, s.semester, s.year, 
+                s.roomID, s.time_slot_id, 
+                t.start_time, t.end_time
+                FROM section s
+                JOIN time_slot t ON s.time_slot_id = t.time_slot_id
+                JOIN teaches ts ON s.course_id = ts.course_id and s.sec_id = ts.sec_id
+                JOIN instructor i ON ts.ID = i.ID
+                JOIN advisor a on ts.ID = a.i_ID
+                JOIN student stu on a.s_ID = stu.stu_ID
+                WHERE s.course_id NOT IN (
+                SELECT course_id
+                FROM takes
+                WHERE takes.stu_ID = %s
+                ) and s.semester = %s
+                """
+             cursor.execute(sql, [session["student_id"], mySemester])
+             data = cursor.fetchall()
+             cursor.close()
+             return render_template("student-view/coursereg.html", semesters=semesters, data=data, msg="")
+        
         myCourse = request.form["course"]
         mySection = request.form["section"]
         mySemester = request.form["semester"]
@@ -1104,16 +1135,20 @@ def courseRegister():
             db.commit()
             
         sql = """
-            SELECT 
-                s.course_id, s.sec_id, s.semester, s.year, 
+            SELECT DISTINCT
+                s.course_id, i.name, stu.name, s.sec_id, s.semester, s.year, 
                 s.roomID, s.time_slot_id, 
-                t.day, t.start_time, t.end_time
+                t.start_time, t.end_time
             FROM section s
             JOIN time_slot t ON s.time_slot_id = t.time_slot_id
+            JOIN teaches ts ON s.course_id = ts.course_id and s.sec_id = ts.sec_id
+            JOIN instructor i ON ts.ID = i.ID
+            JOIN advisor a on ts.ID = a.i_ID
+            JOIN student stu on a.s_ID = stu.stu_ID
             WHERE s.course_id NOT IN (
                 SELECT course_id
                 FROM takes
-                WHERE stu_ID = %s
+                WHERE takes.stu_ID = %s
             )
         """
         
@@ -1121,7 +1156,23 @@ def courseRegister():
         data = cursor.fetchall()
         cursor.close()
         
-        return render_template("student-view/coursereg.html", data=data, msg="Course Registered!")
+        return render_template("student-view/coursereg.html", data=data, semesters=semesters, msg=msg)
+    
+@app.route('/advisorinfo/<name>', methods = ["GET", "POST"])
+def advisorInfo(name):
+     if request.form == "GET":
+          cursor = db.cursor()
+          sql = """SELECT * from student where name = %s"""
+          cursor.execute(sql, [name])
+          data = cursor.fetchone()
+          cursor.close()
+          return render_template("student-view/advisorinfo.html", data=data, stuName=name)
+     cursor = db.cursor()
+     sql = """SELECT * from student where name = %s"""
+     cursor.execute(sql, [name])
+     data = cursor.fetchone()
+     cursor.close()
+     return render_template("student-view/advisorinfo.html", data=data, stuName=name)
 
 
      
@@ -1429,6 +1480,7 @@ def profilePage():
                     WHERE id = %s
                     """
                 cursor.execute(sql, [newUsername, session["id"]])
+                db.commit()
             else:
                 sql = """
                     update accounts
@@ -1438,6 +1490,7 @@ def profilePage():
                     WHERE id = %s
                     """
                 cursor.execute(sql, [newUsername, generate_password_hash(newPassword), session["id"]])
+                db.commit()
             
             if session["permissions"] == "INSTRUCTOR": 
                 newName = request.form["name"]
@@ -1448,6 +1501,7 @@ def profilePage():
                     WHERE id = %s
                     """
                 cursor.execute(sql, [newName, session["instructor_id"]])
+                db.commit()
             if session["permissions"] == "STUDENT":
                 newName = request.form["name"]
                 sql = """
@@ -1457,6 +1511,7 @@ def profilePage():
                     WHERE stu_ID = %s
                     """
                 cursor.execute(sql, [newName, session["student_id"]])
+                db.commit()
                 print(session["student_id"])
 
             return redirect(url_for('profilePage'))
