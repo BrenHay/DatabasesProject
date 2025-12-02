@@ -1568,7 +1568,7 @@ def newPrereq():
         myPrereq = request.form["prereq_id"]
         cursor = db.cursor()
         sql = """select * from prereq where course_id = %s AND prereq_id = %s"""
-        cursor.execute(sql, [newCourseID, newPrereqID])
+        cursor.execute(sql, [myCourse, myPrereq])
         data = cursor.fetchall()
         if data == ():
             sql = """
